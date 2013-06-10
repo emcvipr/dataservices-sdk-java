@@ -81,6 +81,11 @@ import com.amazonaws.services.s3.model.VersionListing;
 import com.amazonaws.util.TimingInfo;
 import com.emc.vipr.services.s3.model.AppendObjectRequest;
 import com.emc.vipr.services.s3.model.AppendObjectResult;
+import com.emc.vipr.services.s3.model.GetAccessModeResult;
+import com.emc.vipr.services.s3.model.GetFileAccessRequest;
+import com.emc.vipr.services.s3.model.GetFileAccessResult;
+import com.emc.vipr.services.s3.model.PutAccessModeRequest;
+import com.emc.vipr.services.s3.model.PutAccessModeResult;
 import com.emc.vipr.services.s3.model.UpdateObjectRequest;
 import com.emc.vipr.services.s3.model.UpdateObjectResult;
 
@@ -1225,6 +1230,24 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 	}
 	
 	@Override
+	public UpdateObjectResult updateObject(String bucketName, String key,
+			File file, long startOffset) throws AmazonClientException,
+			AmazonServiceException {
+		UpdateObjectRequest request = new UpdateObjectRequest(bucketName, key, file).withUpdateOffset(startOffset);
+		
+		return updateObject(request);
+	}
+
+	@Override
+	public UpdateObjectResult updateObject(String bucketName, String key,
+			InputStream input, ObjectMetadata metadata, long startOffset)
+			throws AmazonClientException, AmazonServiceException {
+		UpdateObjectRequest request = new UpdateObjectRequest(bucketName, key, input, metadata).withUpdateOffset(startOffset);
+		
+		return updateObject(request);
+	}
+	
+	@Override
 	public UpdateObjectResult updateObject(UpdateObjectRequest request) {
 		setClient();
 		// TODO Auto-generated method stub
@@ -1232,6 +1255,24 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		return null;
 	}
 
+
+	@Override
+	public AppendObjectResult appendObject(String bucketName, String key,
+			File file) throws AmazonClientException, AmazonServiceException {
+		AppendObjectRequest request = new AppendObjectRequest(bucketName, key, file);
+		
+		return appendObject(request);
+	}
+
+	@Override
+	public AppendObjectResult appendObject(String bucketName, String key,
+			InputStream input, ObjectMetadata metadata)
+			throws AmazonClientException, AmazonServiceException {
+		AppendObjectRequest request = new AppendObjectRequest(bucketName, key, input, metadata);
+		
+		return appendObject(request);
+	}
+	
 	@Override
 	public AppendObjectResult appendObject(AppendObjectRequest request) {
 		setClient();
@@ -1240,6 +1281,26 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		return null;
 	}
 
+	@Override
+	public PutAccessModeResult putAccessMode(PutAccessModeRequest request)
+			throws AmazonClientException, AmazonServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public GetAccessModeResult getAccessMode(String bucketName)
+			throws AmazonClientException, AmazonServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public GetFileAccessResult getFileAccess(GetFileAccessRequest request)
+			throws AmazonClientException, AmazonServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	
 	private void setClient() {
@@ -1281,5 +1342,4 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		}
 		
 	}
-
 }
