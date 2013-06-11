@@ -3,82 +3,56 @@
  */
 package com.emc.vipr.services.s3;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Date;
-import java.util.List;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.AmazonWebServiceRequest;
-import com.amazonaws.HttpMethod;
+import com.amazonaws.AmazonWebServiceResponse;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Request;
-import com.amazonaws.handlers.RequestHandler;
-import com.amazonaws.regions.Region;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.http.ExecutionContext;
+import com.amazonaws.http.HttpMethodName;
+import com.amazonaws.http.HttpResponseHandler;
+import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.S3ClientOptions;
-import com.amazonaws.services.s3.S3ResponseMetadata;
-import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
+import com.amazonaws.services.s3.Headers;
+import com.amazonaws.services.s3.internal.Constants;
+import com.amazonaws.services.s3.internal.MD5DigestCalculatingInputStream;
+import com.amazonaws.services.s3.internal.Mimetypes;
+import com.amazonaws.services.s3.internal.ProgressReportingInputStream;
+import com.amazonaws.services.s3.internal.RepeatableFileInputStream;
+import com.amazonaws.services.s3.internal.RepeatableInputStream;
+import com.amazonaws.services.s3.internal.S3ErrorResponseHandler;
+import com.amazonaws.services.s3.internal.S3MetadataResponseHandler;
 import com.amazonaws.services.s3.model.AccessControlList;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketCrossOriginConfiguration;
-import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
-import com.amazonaws.services.s3.model.BucketLoggingConfiguration;
-import com.amazonaws.services.s3.model.BucketNotificationConfiguration;
-import com.amazonaws.services.s3.model.BucketPolicy;
-import com.amazonaws.services.s3.model.BucketTaggingConfiguration;
-import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
-import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.CopyObjectResult;
-import com.amazonaws.services.s3.model.CopyPartRequest;
-import com.amazonaws.services.s3.model.CopyPartResult;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.DeleteBucketPolicyRequest;
-import com.amazonaws.services.s3.model.DeleteBucketRequest;
-import com.amazonaws.services.s3.model.DeleteBucketWebsiteConfigurationRequest;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.DeleteObjectsResult;
-import com.amazonaws.services.s3.model.DeleteVersionRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.GetBucketAclRequest;
-import com.amazonaws.services.s3.model.GetBucketLocationRequest;
-import com.amazonaws.services.s3.model.GetBucketPolicyRequest;
-import com.amazonaws.services.s3.model.GetBucketWebsiteConfigurationRequest;
-import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.ListBucketsRequest;
-import com.amazonaws.services.s3.model.ListMultipartUploadsRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ListPartsRequest;
-import com.amazonaws.services.s3.model.ListVersionsRequest;
-import com.amazonaws.services.s3.model.MultipartUploadListing;
-import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.Grant;
+import com.amazonaws.services.s3.model.Grantee;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.Owner;
-import com.amazonaws.services.s3.model.PartListing;
+import com.amazonaws.services.s3.model.Permission;
+import com.amazonaws.services.s3.model.ProgressEvent;
+import com.amazonaws.services.s3.model.ProgressListener;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.RestoreObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.SetBucketAclRequest;
-import com.amazonaws.services.s3.model.SetBucketLoggingConfigurationRequest;
-import com.amazonaws.services.s3.model.SetBucketPolicyRequest;
-import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
-import com.amazonaws.services.s3.model.SetBucketWebsiteConfigurationRequest;
-import com.amazonaws.services.s3.model.StorageClass;
-import com.amazonaws.services.s3.model.UploadPartRequest;
-import com.amazonaws.services.s3.model.UploadPartResult;
-import com.amazonaws.services.s3.model.VersionListing;
-import com.amazonaws.util.TimingInfo;
+import com.amazonaws.util.BinaryUtils;
+import com.amazonaws.util.Md5Utils;
 import com.emc.vipr.services.s3.model.AppendObjectRequest;
 import com.emc.vipr.services.s3.model.AppendObjectResult;
 import com.emc.vipr.services.s3.model.GetAccessModeResult;
@@ -93,1143 +67,90 @@ import com.emc.vipr.services.s3.model.UpdateObjectResult;
  * @author cwikj
  *
  */
-public class ViPRS3Client implements ViPRS3, AmazonS3 {
-	private AmazonS3Client delegate;
-	private ViPRRequestHandler requestHandler;
+public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
+     private static Log log = LogFactory.getLog(ViPRS3Client.class);
+    
+    /** Responsible for handling error responses from all S3 service calls. */
+    private S3ErrorResponseHandler errorResponseHandler = new S3ErrorResponseHandler();
+    
+    private AWSCredentialsProvider awsCredentialsProvider;
+
+	// Header names
+	private static final String APPEND_OFFSET_HEADER = "x-emc-append-offset";
 	
-	/** 
-	 * Since the S3 RequestHandlers are stored in a private List, we can't ensure that multiple
-	 * ViPRS3Clients haven't registered handlers with the AmazonS3Client.  We will use this Thread
-	 * Local to keep track of the currently executing ViPRS3Client so that any extraneous 
-	 * RequestHandlers will ignore the request if it's not from the currently executing
-	 * ViPRS3Client.
-	 */
-	private static ThreadLocal<ViPRS3Client> currentClient = new ThreadLocal<ViPRS3Client>();
-
-	public ViPRS3Client(AmazonS3Client delegate) {
-		this.delegate = delegate;
-		this.requestHandler = new ViPRRequestHandler();
-
-		// Register the handler
-		delegate.addRequestHandler(requestHandler);
-	}
-	
-	@Override
-	protected void finalize() throws Throwable {
-		// Unregister our delegate
-		delegate.removeRequestHandler(requestHandler);
-		super.finalize();
-	}
-
-	/**
-	 * @see com.amazonaws.services.s3.AmazonS3#setEndpoint(java.lang.String)
-	 */
-	@Override
-	public void setEndpoint(String endpoint) {
-		delegate.setEndpoint(endpoint);
-	}
-
-	/**
-	 * @see com.amazonaws.services.s3.AmazonS3#setRegion(com.amazonaws.regions.Region)
-	 */
-	@Override
-	public void setRegion(Region region) throws IllegalArgumentException {
-		delegate.setRegion(region);
-	}
-
-	/**
-	 * @see com.amazonaws.services.s3.AmazonS3#setS3ClientOptions(com.amazonaws.services.s3.S3ClientOptions)
-	 */
-	@Override
-	public void setS3ClientOptions(S3ClientOptions clientOptions) {
-		delegate.setS3ClientOptions(clientOptions);
-	}
-
-	/**
-	 * @see com.amazonaws.services.s3.AmazonS3#changeObjectStorageClass(java.lang.String, java.lang.String, com.amazonaws.services.s3.model.StorageClass)
-	 */
-	@Override
-	public void changeObjectStorageClass(String bucketName, String key,
-			StorageClass newStorageClass) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		delegate.changeObjectStorageClass(bucketName, key, newStorageClass);
-		unsetClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setObjectRedirectLocation(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void setObjectRedirectLocation(String bucketName, String key,
-			String newRedirectLocation) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listObjects(java.lang.String)
-	 */
-	@Override
-	public ObjectListing listObjects(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listObjects(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public ObjectListing listObjects(String bucketName, String prefix)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listObjects(com.amazonaws.services.s3.model.ListObjectsRequest)
-	 */
-	@Override
-	public ObjectListing listObjects(ListObjectsRequest listObjectsRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listNextBatchOfObjects(com.amazonaws.services.s3.model.ObjectListing)
-	 */
-	@Override
-	public ObjectListing listNextBatchOfObjects(
-			ObjectListing previousObjectListing) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listVersions(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public VersionListing listVersions(String bucketName, String prefix)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listNextBatchOfVersions(com.amazonaws.services.s3.model.VersionListing)
-	 */
-	@Override
-	public VersionListing listNextBatchOfVersions(
-			VersionListing previousVersionListing)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listVersions(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Integer)
-	 */
-	@Override
-	public VersionListing listVersions(String bucketName, String prefix,
-			String keyMarker, String versionIdMarker, String delimiter,
-			Integer maxResults) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listVersions(com.amazonaws.services.s3.model.ListVersionsRequest)
-	 */
-	@Override
-	public VersionListing listVersions(ListVersionsRequest listVersionsRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getS3AccountOwner()
-	 */
-	@Override
-	public Owner getS3AccountOwner() throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#doesBucketExist(java.lang.String)
-	 */
-	@Override
-	public boolean doesBucketExist(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listBuckets()
-	 */
-	@Override
-	public List<Bucket> listBuckets() throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listBuckets(com.amazonaws.services.s3.model.ListBucketsRequest)
-	 */
-	@Override
-	public List<Bucket> listBuckets(ListBucketsRequest listBucketsRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketLocation(java.lang.String)
-	 */
-	@Override
-	public String getBucketLocation(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketLocation(com.amazonaws.services.s3.model.GetBucketLocationRequest)
-	 */
-	@Override
-	public String getBucketLocation(
-			GetBucketLocationRequest getBucketLocationRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#createBucket(com.amazonaws.services.s3.model.CreateBucketRequest)
-	 */
-	@Override
-	public Bucket createBucket(CreateBucketRequest createBucketRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#createBucket(java.lang.String)
-	 */
-	@Override
-	public Bucket createBucket(String bucketName) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#createBucket(java.lang.String, com.amazonaws.services.s3.model.Region)
-	 */
-	@Override
-	public Bucket createBucket(String bucketName,
-			com.amazonaws.services.s3.model.Region region)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#createBucket(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Bucket createBucket(String bucketName, String region)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObjectAcl(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public AccessControlList getObjectAcl(String bucketName, String key)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObjectAcl(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public AccessControlList getObjectAcl(String bucketName, String key,
-			String versionId) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setObjectAcl(java.lang.String, java.lang.String, com.amazonaws.services.s3.model.AccessControlList)
-	 */
-	@Override
-	public void setObjectAcl(String bucketName, String key,
-			AccessControlList acl) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setObjectAcl(java.lang.String, java.lang.String, com.amazonaws.services.s3.model.CannedAccessControlList)
-	 */
-	@Override
-	public void setObjectAcl(String bucketName, String key,
-			CannedAccessControlList acl) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setObjectAcl(java.lang.String, java.lang.String, java.lang.String, com.amazonaws.services.s3.model.AccessControlList)
-	 */
-	@Override
-	public void setObjectAcl(String bucketName, String key, String versionId,
-			AccessControlList acl) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setObjectAcl(java.lang.String, java.lang.String, java.lang.String, com.amazonaws.services.s3.model.CannedAccessControlList)
-	 */
-	@Override
-	public void setObjectAcl(String bucketName, String key, String versionId,
-			CannedAccessControlList acl) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketAcl(java.lang.String)
-	 */
-	@Override
-	public AccessControlList getBucketAcl(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketAcl(com.amazonaws.services.s3.model.SetBucketAclRequest)
-	 */
-	@Override
-	public void setBucketAcl(SetBucketAclRequest setBucketAclRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketAcl(com.amazonaws.services.s3.model.GetBucketAclRequest)
-	 */
-	@Override
-	public AccessControlList getBucketAcl(
-			GetBucketAclRequest getBucketAclRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketAcl(java.lang.String, com.amazonaws.services.s3.model.AccessControlList)
-	 */
-	@Override
-	public void setBucketAcl(String bucketName, AccessControlList acl)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketAcl(java.lang.String, com.amazonaws.services.s3.model.CannedAccessControlList)
-	 */
-	@Override
-	public void setBucketAcl(String bucketName, CannedAccessControlList acl)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObjectMetadata(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public ObjectMetadata getObjectMetadata(String bucketName, String key)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
-	 */
-	@Override
-	public ObjectMetadata getObjectMetadata(
-			GetObjectMetadataRequest getObjectMetadataRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObject(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public S3Object getObject(String bucketName, String key)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest)
-	 */
-	@Override
-	public S3Object getObject(GetObjectRequest getObjectRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest, java.io.File)
-	 */
-	@Override
-	public ObjectMetadata getObject(GetObjectRequest getObjectRequest,
-			File destinationFile) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucket(com.amazonaws.services.s3.model.DeleteBucketRequest)
-	 */
-	@Override
-	public void deleteBucket(DeleteBucketRequest deleteBucketRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucket(java.lang.String)
-	 */
-	@Override
-	public void deleteBucket(String bucketName) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#putObject(com.amazonaws.services.s3.model.PutObjectRequest)
-	 */
-	@Override
-	public PutObjectResult putObject(PutObjectRequest putObjectRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#putObject(java.lang.String, java.lang.String, java.io.File)
-	 */
-	@Override
-	public PutObjectResult putObject(String bucketName, String key, File file)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#putObject(java.lang.String, java.lang.String, java.io.InputStream, com.amazonaws.services.s3.model.ObjectMetadata)
-	 */
-	@Override
-	public PutObjectResult putObject(String bucketName, String key,
-			InputStream input, ObjectMetadata metadata)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#copyObject(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public CopyObjectResult copyObject(String sourceBucketName,
-			String sourceKey, String destinationBucketName,
-			String destinationKey) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#copyObject(com.amazonaws.services.s3.model.CopyObjectRequest)
-	 */
-	@Override
-	public CopyObjectResult copyObject(CopyObjectRequest copyObjectRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#copyPart(com.amazonaws.services.s3.model.CopyPartRequest)
-	 */
-	@Override
-	public CopyPartResult copyPart(CopyPartRequest copyPartRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteObject(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void deleteObject(String bucketName, String key)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteObject(com.amazonaws.services.s3.model.DeleteObjectRequest)
-	 */
-	@Override
-	public void deleteObject(DeleteObjectRequest deleteObjectRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteObjects(com.amazonaws.services.s3.model.DeleteObjectsRequest)
-	 */
-	@Override
-	public DeleteObjectsResult deleteObjects(
-			DeleteObjectsRequest deleteObjectsRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteVersion(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void deleteVersion(String bucketName, String key, String versionId)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteVersion(com.amazonaws.services.s3.model.DeleteVersionRequest)
-	 */
-	@Override
-	public void deleteVersion(DeleteVersionRequest deleteVersionRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketLoggingConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketLoggingConfiguration getBucketLoggingConfiguration(
-			String bucketName) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketLoggingConfiguration(com.amazonaws.services.s3.model.SetBucketLoggingConfigurationRequest)
-	 */
-	@Override
-	public void setBucketLoggingConfiguration(
-			SetBucketLoggingConfigurationRequest setBucketLoggingConfigurationRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketVersioningConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketVersioningConfiguration getBucketVersioningConfiguration(
-			String bucketName) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketVersioningConfiguration(com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest)
-	 */
-	@Override
-	public void setBucketVersioningConfiguration(
-			SetBucketVersioningConfigurationRequest setBucketVersioningConfigurationRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketLifecycleConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketLifecycleConfiguration getBucketLifecycleConfiguration(
-			String bucketName) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketLifecycleConfiguration(java.lang.String, com.amazonaws.services.s3.model.BucketLifecycleConfiguration)
-	 */
-	@Override
-	public void setBucketLifecycleConfiguration(String bucketName,
-			BucketLifecycleConfiguration bucketLifecycleConfiguration) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketLifecycleConfiguration(java.lang.String)
-	 */
-	@Override
-	public void deleteBucketLifecycleConfiguration(String bucketName) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketCrossOriginConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketCrossOriginConfiguration getBucketCrossOriginConfiguration(
-			String bucketName) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketCrossOriginConfiguration(java.lang.String, com.amazonaws.services.s3.model.BucketCrossOriginConfiguration)
-	 */
-	@Override
-	public void setBucketCrossOriginConfiguration(String bucketName,
-			BucketCrossOriginConfiguration bucketCrossOriginConfiguration) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketCrossOriginConfiguration(java.lang.String)
-	 */
-	@Override
-	public void deleteBucketCrossOriginConfiguration(String bucketName) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketTaggingConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketTaggingConfiguration getBucketTaggingConfiguration(
-			String bucketName) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketTaggingConfiguration(java.lang.String, com.amazonaws.services.s3.model.BucketTaggingConfiguration)
-	 */
-	@Override
-	public void setBucketTaggingConfiguration(String bucketName,
-			BucketTaggingConfiguration bucketTaggingConfiguration) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketTaggingConfiguration(java.lang.String)
-	 */
-	@Override
-	public void deleteBucketTaggingConfiguration(String bucketName) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketNotificationConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketNotificationConfiguration getBucketNotificationConfiguration(
-			String bucketName) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketNotificationConfiguration(java.lang.String, com.amazonaws.services.s3.model.BucketNotificationConfiguration)
-	 */
-	@Override
-	public void setBucketNotificationConfiguration(String bucketName,
-			BucketNotificationConfiguration bucketNotificationConfiguration)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketWebsiteConfiguration(java.lang.String)
-	 */
-	@Override
-	public BucketWebsiteConfiguration getBucketWebsiteConfiguration(
-			String bucketName) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketWebsiteConfiguration(com.amazonaws.services.s3.model.GetBucketWebsiteConfigurationRequest)
-	 */
-	@Override
-	public BucketWebsiteConfiguration getBucketWebsiteConfiguration(
-			GetBucketWebsiteConfigurationRequest getBucketWebsiteConfigurationRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketWebsiteConfiguration(java.lang.String, com.amazonaws.services.s3.model.BucketWebsiteConfiguration)
-	 */
-	@Override
-	public void setBucketWebsiteConfiguration(String bucketName,
-			BucketWebsiteConfiguration configuration)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketWebsiteConfiguration(com.amazonaws.services.s3.model.SetBucketWebsiteConfigurationRequest)
-	 */
-	@Override
-	public void setBucketWebsiteConfiguration(
-			SetBucketWebsiteConfigurationRequest setBucketWebsiteConfigurationRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketWebsiteConfiguration(java.lang.String)
-	 */
-	@Override
-	public void deleteBucketWebsiteConfiguration(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketWebsiteConfiguration(com.amazonaws.services.s3.model.DeleteBucketWebsiteConfigurationRequest)
-	 */
-	@Override
-	public void deleteBucketWebsiteConfiguration(
-			DeleteBucketWebsiteConfigurationRequest deleteBucketWebsiteConfigurationRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketPolicy(java.lang.String)
-	 */
-	@Override
-	public BucketPolicy getBucketPolicy(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getBucketPolicy(com.amazonaws.services.s3.model.GetBucketPolicyRequest)
-	 */
-	@Override
-	public BucketPolicy getBucketPolicy(
-			GetBucketPolicyRequest getBucketPolicyRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketPolicy(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void setBucketPolicy(String bucketName, String policyText)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#setBucketPolicy(com.amazonaws.services.s3.model.SetBucketPolicyRequest)
-	 */
-	@Override
-	public void setBucketPolicy(SetBucketPolicyRequest setBucketPolicyRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketPolicy(java.lang.String)
-	 */
-	@Override
-	public void deleteBucketPolicy(String bucketName)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#deleteBucketPolicy(com.amazonaws.services.s3.model.DeleteBucketPolicyRequest)
-	 */
-	@Override
-	public void deleteBucketPolicy(
-			DeleteBucketPolicyRequest deleteBucketPolicyRequest)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#generatePresignedUrl(java.lang.String, java.lang.String, java.util.Date)
-	 */
-	@Override
-	public URL generatePresignedUrl(String bucketName, String key,
-			Date expiration) throws AmazonClientException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#generatePresignedUrl(java.lang.String, java.lang.String, java.util.Date, com.amazonaws.HttpMethod)
-	 */
-	@Override
-	public URL generatePresignedUrl(String bucketName, String key,
-			Date expiration, HttpMethod method) throws AmazonClientException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#generatePresignedUrl(com.amazonaws.services.s3.model.GeneratePresignedUrlRequest)
-	 */
-	@Override
-	public URL generatePresignedUrl(
-			GeneratePresignedUrlRequest generatePresignedUrlRequest)
-			throws AmazonClientException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#initiateMultipartUpload(com.amazonaws.services.s3.model.InitiateMultipartUploadRequest)
-	 */
-	@Override
-	public InitiateMultipartUploadResult initiateMultipartUpload(
-			InitiateMultipartUploadRequest request)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#uploadPart(com.amazonaws.services.s3.model.UploadPartRequest)
-	 */
-	@Override
-	public UploadPartResult uploadPart(UploadPartRequest request)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listParts(com.amazonaws.services.s3.model.ListPartsRequest)
-	 */
-	@Override
-	public PartListing listParts(ListPartsRequest request)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#abortMultipartUpload(com.amazonaws.services.s3.model.AbortMultipartUploadRequest)
-	 */
-	@Override
-	public void abortMultipartUpload(AbortMultipartUploadRequest request)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#completeMultipartUpload(com.amazonaws.services.s3.model.CompleteMultipartUploadRequest)
-	 */
-	@Override
-	public CompleteMultipartUploadResult completeMultipartUpload(
-			CompleteMultipartUploadRequest request)
-			throws AmazonClientException, AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#listMultipartUploads(com.amazonaws.services.s3.model.ListMultipartUploadsRequest)
-	 */
-	@Override
-	public MultipartUploadListing listMultipartUploads(
-			ListMultipartUploadsRequest request) throws AmazonClientException,
-			AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#getCachedResponseMetadata(com.amazonaws.AmazonWebServiceRequest)
-	 */
-	@Override
-	public S3ResponseMetadata getCachedResponseMetadata(
-			AmazonWebServiceRequest request) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#restoreObject(com.amazonaws.services.s3.model.RestoreObjectRequest)
-	 */
-	@Override
-	public void restoreObject(RestoreObjectRequest copyGlacierObjectRequest)
-			throws AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.amazonaws.services.s3.AmazonS3#restoreObject(java.lang.String, java.lang.String, int)
-	 */
-	@Override
-	public void restoreObject(String bucketName, String key,
-			int expirationInDays) throws AmazonServiceException {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-
+	private String namespace;
+
+    /**
+     * Constructs a new ViPR S3 client using the specified AWS credentials to
+     * access the EMC ViPR S3 protocol.
+     *
+     * @param awsCredentials
+     *            The AWS credentials to use when making requests
+     *            with this client.
+     *
+     * @see AmazonS3Client#AmazonS3Client()
+     * @see AmazonS3Client#AmazonS3Client(AWSCredentials)
+     */
+	public ViPRS3Client(AWSCredentials awsCredentials) {
+		super(awsCredentials);
+		
+		this.awsCredentialsProvider = new StaticCredentialsProvider(awsCredentials);
 	}
 	
-	@Override
+    /**
+     * Constructs a new ViPR S3 client using the specified AWS credentials and
+     * client configuration to access the EMC ViPR S3 protocol.
+     *
+     * @param awsCredentials
+     *            The AWS credentials to use when making requests
+     *            with this client.
+     * @param clientConfiguration
+     *            The client configuration options controlling how this client
+     *            connects (e.g. proxy settings, retry counts, etc).
+     *
+     * @see AmazonS3Client#AmazonS3Client()
+     * @see AmazonS3Client#AmazonS3Client(AWSCredentials, ClientConfiguration)
+     */
+	public ViPRS3Client(AWSCredentials awsCredentials, ClientConfiguration clientConfiguration) {
+		super(awsCredentials, clientConfiguration);
+		
+		this.awsCredentialsProvider = new StaticCredentialsProvider(awsCredentials);
+	}
+	
+    /**
+     * Constructs a new ViPR S3 client using the specified AWS credentials
+     * provider to access the EMC ViPR S3 protocol.
+     *
+     * @param credentialsProvider
+     *            The AWS credentials provider which will provide credentials
+     *            to authenticate requests.
+     * @see AmazonS3Client#AmazonS3Client(AWSCredentialsProvider)
+     */
+	public ViPRS3Client(AWSCredentialsProvider credentialsProvider) {
+		super(credentialsProvider);
+		
+		this.awsCredentialsProvider = credentialsProvider;
+	}
+	
+    /**
+     * Constructs a new ViPR S3 client using the specified AWS credentials and
+     * client configuration to access the EMC ViPR S3 protocol.
+     *
+     * @param credentialsProvider
+     *            The AWS credentials provider which will provide credentials
+     *            to authenticate requests.
+     * @param clientConfiguration
+     *            The client configuration options controlling how this client
+     *            connects (e.g. proxy settings, retry counts, etc).
+     */
+	public ViPRS3Client(AWSCredentialsProvider credentialsProvider, ClientConfiguration clientConfiguration) {
+		super(credentialsProvider, clientConfiguration);
+		
+		this.awsCredentialsProvider = credentialsProvider;
+	}
+	
+	
+	
 	public UpdateObjectResult updateObject(String bucketName, String key,
 			File file, long startOffset) throws AmazonClientException,
 			AmazonServiceException {
@@ -1238,7 +159,6 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		return updateObject(request);
 	}
 
-	@Override
 	public UpdateObjectResult updateObject(String bucketName, String key,
 			InputStream input, ObjectMetadata metadata, long startOffset)
 			throws AmazonClientException, AmazonServiceException {
@@ -1247,16 +167,18 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		return updateObject(request);
 	}
 	
-	@Override
 	public UpdateObjectResult updateObject(UpdateObjectRequest request) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
+            ObjectMetadata returnedMetadata = doPut(request);
+            UpdateObjectResult result = new UpdateObjectResult();
+            result.setETag(returnedMetadata.getETag());
+            result.setVersionId(returnedMetadata.getVersionId());
+            result.setServerSideEncryption(returnedMetadata.getServerSideEncryption());
+            result.setExpirationTime(returnedMetadata.getExpirationTime());
+            result.setExpirationTimeRuleId(returnedMetadata.getExpirationTimeRuleId());
+            return result;
 	}
 
 
-	@Override
 	public AppendObjectResult appendObject(String bucketName, String key,
 			File file) throws AmazonClientException, AmazonServiceException {
 		AppendObjectRequest request = new AppendObjectRequest(bucketName, key, file);
@@ -1264,7 +186,6 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		return appendObject(request);
 	}
 
-	@Override
 	public AppendObjectResult appendObject(String bucketName, String key,
 			InputStream input, ObjectMetadata metadata)
 			throws AmazonClientException, AmazonServiceException {
@@ -1273,73 +194,307 @@ public class ViPRS3Client implements ViPRS3, AmazonS3 {
 		return appendObject(request);
 	}
 	
-	@Override
 	public AppendObjectResult appendObject(AppendObjectRequest request) {
-		setClient();
-		// TODO Auto-generated method stub
-		unsetClient();
-		return null;
+            ObjectMetadata returnedMetadata = doPut(request);
+            AppendObjectResult result = new AppendObjectResult();
+            result.setETag(returnedMetadata.getETag());
+            result.setVersionId(returnedMetadata.getVersionId());
+            result.setServerSideEncryption(returnedMetadata.getServerSideEncryption());
+            result.setExpirationTime(returnedMetadata.getExpirationTime());
+            result.setExpirationTimeRuleId(returnedMetadata.getExpirationTimeRuleId());
+            result.setAppendOffset(Long.parseLong(""+returnedMetadata.getRawMetadata().get(APPEND_OFFSET_HEADER)));
+            return result;
 	}
 
-	@Override
 	public PutAccessModeResult putAccessMode(PutAccessModeRequest request)
 			throws AmazonClientException, AmazonServiceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public GetAccessModeResult getAccessMode(String bucketName)
 			throws AmazonClientException, AmazonServiceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public GetFileAccessResult getFileAccess(GetFileAccessRequest request)
 			throws AmazonClientException, AmazonServiceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	private ObjectMetadata doPut(PutObjectRequest putObjectRequest) {
+        assertParameterNotNull(putObjectRequest, "The PutObjectRequest parameter must be specified when uploading an object");
+
+        String bucketName = putObjectRequest.getBucketName();
+        String key = putObjectRequest.getKey();
+        ObjectMetadata metadata = putObjectRequest.getMetadata();
+        InputStream input = putObjectRequest.getInputStream();
+        ProgressListener progressListener = putObjectRequest.getProgressListener();
+        if (metadata == null) metadata = new ObjectMetadata();
+
+        assertParameterNotNull(bucketName, "The bucket name parameter must be specified when uploading an object");
+        assertParameterNotNull(key, "The key parameter must be specified when uploading an object");
+
+        // If a file is specified for upload, we need to pull some additional
+        // information from it to auto-configure a few options
+        if (putObjectRequest.getFile() != null) {
+            File file = putObjectRequest.getFile();
+
+            // Always set the content length, even if it's already set
+            metadata.setContentLength(file.length());
+
+            // Only set the content type if it hasn't already been set
+            if (metadata.getContentType() == null) {
+                metadata.setContentType(Mimetypes.getInstance().getMimetype(file));
+            }
+
+            FileInputStream fileInputStream = null;
+            try {
+                fileInputStream = new FileInputStream(file);
+                byte[] md5Hash = Md5Utils.computeMD5Hash(fileInputStream);
+                metadata.setContentMD5(BinaryUtils.toBase64(md5Hash));
+            } catch (Exception e) {
+                throw new AmazonClientException(
+                        "Unable to calculate MD5 hash: " + e.getMessage(), e);
+            } finally {
+                try {fileInputStream.close();} catch (Exception e) {}
+            }
+
+            try {
+                input = new RepeatableFileInputStream(file);
+            } catch (FileNotFoundException fnfe) {
+                throw new AmazonClientException("Unable to find file to upload", fnfe);
+            }
+        }
+
+        Request<PutObjectRequest> request = createRequest(bucketName, key, putObjectRequest, HttpMethodName.PUT);
+
+        if ( putObjectRequest.getAccessControlList() != null) {
+            addAclHeaders(request, putObjectRequest.getAccessControlList());
+        } else if ( putObjectRequest.getCannedAcl() != null ) {
+            request.addHeader(Headers.S3_CANNED_ACL, putObjectRequest.getCannedAcl().toString());
+        }
+
+        if (putObjectRequest.getStorageClass() != null) {
+            request.addHeader(Headers.STORAGE_CLASS, putObjectRequest.getStorageClass());
+        }
+
+        if (putObjectRequest.getRedirectLocation() != null) {
+            request.addHeader(Headers.REDIRECT_LOCATION, putObjectRequest.getRedirectLocation());
+            if (input == null) {
+                input = new ByteArrayInputStream(new byte[0]);
+            }
+        }
+
+        // Use internal interface to differentiate 0 from unset.
+        if (metadata.getRawMetadata().get(Headers.CONTENT_LENGTH) == null) {
+            /*
+             * There's nothing we can do except for let the HTTP client buffer
+             * the input stream contents if the caller doesn't tell us how much
+             * data to expect in a stream since we have to explicitly tell
+             * Amazon S3 how much we're sending before we start sending any of
+             * it.
+             */
+            log.warn("No content length specified for stream data.  " +
+                     "Stream contents will be buffered in memory and could result in " +
+                     "out of memory errors.");
+        }
+
+        if (progressListener != null) {
+            input = new ProgressReportingInputStream(input, progressListener);
+            fireProgressEvent(progressListener, ProgressEvent.STARTED_EVENT_CODE);
+        }
+
+        if (!input.markSupported()) {
+            int streamBufferSize = Constants.DEFAULT_STREAM_BUFFER_SIZE;
+            String bufferSizeOverride = System.getProperty("com.amazonaws.sdk.s3.defaultStreamBufferSize");
+            if (bufferSizeOverride != null) {
+                try {
+                    streamBufferSize = Integer.parseInt(bufferSizeOverride);
+                } catch (Exception e) {
+                    log.warn("Unable to parse buffer size override from value: " + bufferSizeOverride);
+                }
+            }
+
+            input = new RepeatableInputStream(input, streamBufferSize);
+        }
+
+        MD5DigestCalculatingInputStream md5DigestStream = null;
+        if (metadata.getContentMD5() == null) {
+            /*
+             * If the user hasn't set the content MD5, then we don't want to
+             * buffer the whole stream in memory just to calculate it. Instead,
+             * we can calculate it on the fly and validate it with the returned
+             * ETag from the object upload.
+             */
+            try {
+                md5DigestStream = new MD5DigestCalculatingInputStream(input);
+                input = md5DigestStream;
+            } catch (NoSuchAlgorithmException e) {
+                log.warn("No MD5 digest algorithm available.  Unable to calculate " +
+                         "checksum and verify data integrity.", e);
+            }
+        }
+
+        if (metadata.getContentType() == null) {
+            /*
+             * Default to the "application/octet-stream" if the user hasn't
+             * specified a content type.
+             */
+            metadata.setContentType(Mimetypes.MIMETYPE_OCTET_STREAM);
+        }
+
+        populateRequestMetadata(request, metadata);
+        request.setContent(input);
+
+        ObjectMetadata returnedMetadata = null;
+        try {
+            returnedMetadata = invoke(request, new S3MetadataResponseHandler(), bucketName, key);
+        } catch (AmazonClientException ace) {
+            fireProgressEvent(progressListener, ProgressEvent.FAILED_EVENT_CODE);
+            throw ace;
+        } finally {
+            try {input.close();} catch (Exception e) {
+                log.warn("Unable to cleanly close input stream: " + e.getMessage(), e);
+            }
+        }
+
+        String contentMd5 = metadata.getContentMD5();
+        if (md5DigestStream != null) {
+            contentMd5 = BinaryUtils.toBase64(md5DigestStream.getMd5Digest());
+        }
+
+        if (returnedMetadata != null && contentMd5 != null) {
+            byte[] clientSideHash = BinaryUtils.fromBase64(contentMd5);
+            byte[] serverSideHash = BinaryUtils.fromHex(returnedMetadata.getETag());
+
+            if (!Arrays.equals(clientSideHash, serverSideHash)) {
+                fireProgressEvent(progressListener, ProgressEvent.FAILED_EVENT_CODE);
+                throw new AmazonClientException("Unable to verify integrity of data upload.  " +
+                        "Client calculated content hash didn't match hash calculated by Amazon S3.  " +
+                        "You may need to delete the data stored in Amazon S3.");
+            }
+        }
+
+        fireProgressEvent(progressListener, ProgressEvent.COMPLETED_EVENT_CODE);
+
+        return returnedMetadata;
+	}
 
 	
-	private void setClient() {
-		currentClient.set(this);
+	/**
+	 * Gets the currently configured ViPR namespace.  If null, the
+	 * namespace will be automatically selected from the endpoint
+	 * hostname.
+	 * @return the current ViPR namespace
+	 */
+	public String getNamespace() {
+		return namespace;
+	}
+
+	/**
+	 * Sets the ViPR namespace to use.  Generally, this will be
+	 * automatically determined by the endpoint of the underlying
+	 * S3 client in the form of {namespace}.company.com, but if this
+	 * is not possible, it can be overridden by setting this property.
+	 * @param namespace the namespace to set
+	 */
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
 	}
 	
-	private void unsetClient() {
-		currentClient.set(null);
-	}
-	
-	public class ViPRRequestHandler implements RequestHandler {
+    /**
+     * <p>
+     * Asserts that the specified parameter value is not <code>null</code> and if it is,
+     * throws an <code>IllegalArgumentException</code> with the specified error message.
+     * </p>
+     *
+     * @param parameterValue
+     *            The parameter value being checked.
+     * @param errorMessage
+     *            The error message to include in the IllegalArgumentException
+     *            if the specified parameter is null.
+     */
+    private void assertParameterNotNull(Object parameterValue, String errorMessage) {
+        if (parameterValue == null) throw new IllegalArgumentException(errorMessage);
+    }
 
-		@Override
-		public void beforeRequest(Request<?> request) {
-			if(ViPRS3Client.this != currentClient.get()) {
-				// Not currently executing client.
-				return;
-			}
-			
-		}
+    /**
+     * Sets the acccess control headers for the request given.
+     */
+    private static void addAclHeaders(Request<? extends AmazonWebServiceRequest> request, AccessControlList acl) {
+        Set<Grant> grants = acl.getGrants();
+        Map<Permission, Collection<Grantee>> grantsByPermission = new HashMap<Permission, Collection<Grantee>>();
+        for ( Grant grant : grants ) {
+            if ( !grantsByPermission.containsKey(grant.getPermission()) ) {
+                grantsByPermission.put(grant.getPermission(), new LinkedList<Grantee>());
+            }
+            grantsByPermission.get(grant.getPermission()).add(grant.getGrantee());
+        }
+        for ( Permission permission : Permission.values() ) {
+            if ( grantsByPermission.containsKey(permission) ) {
+                Collection<Grantee> grantees = grantsByPermission.get(permission);
+                boolean seenOne = false;
+                StringBuilder granteeString = new StringBuilder();
+                for ( Grantee grantee : grantees ) {
+                    if ( !seenOne )
+                        seenOne = true;
+                    else
+                        granteeString.append(", ");
+                    granteeString.append(grantee.getTypeIdentifier()).append("=").append("\"")
+                            .append(grantee.getIdentifier()).append("\"");
+                }
+                request.addHeader(permission.getHeaderName(), granteeString.toString());
+            }
+        }
+    }
+    
+    /**
+     * Fires a progress event with the specified event type to the specified
+     * listener.
+     *
+     * @param listener
+     *            The listener to receive the event.
+     * @param eventType
+     *            The type of event to fire.
+     */
+    private void fireProgressEvent(ProgressListener listener, int eventType) {
+        if (listener == null) return;
+        ProgressEvent event = new ProgressEvent(0);
+        event.setEventCode(eventType);
+        listener.progressChanged(event);
+    }
 
-		@Override
-		public void afterResponse(Request<?> request, Object response,
-				TimingInfo timingInfo) {
-			if(ViPRS3Client.this != currentClient.get()) {
-				// Not currently executing client.
-				return;
-			}
-			
-		}
+    private <X, Y extends AmazonWebServiceRequest> X invoke(Request<Y> request, HttpResponseHandler<AmazonWebServiceResponse<X>> responseHandler, String bucket, String key) {
+        for (Entry<String, String> entry : request.getOriginalRequest().copyPrivateRequestParameters().entrySet()) {
+            request.addParameter(entry.getKey(), entry.getValue());
+        }
+        request.setTimeOffset(timeOffset);
 
-		@Override
-		public void afterError(Request<?> request, Exception e) {
-			if(ViPRS3Client.this != currentClient.get()) {
-				// Not currently executing client.
-				return;
-			}
-			
-		}
-		
-	}
+        /*
+         * The string we sign needs to include the exact headers that we
+         * send with the request, but the client runtime layer adds the
+         * Content-Type header before the request is sent if one isn't set, so
+         * we have to set something here otherwise the request will fail.
+         */
+        if (request.getHeaders().get("Content-Type") == null) {
+            request.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+        }
+
+        AWSCredentials credentials = awsCredentialsProvider.getCredentials();
+        AmazonWebServiceRequest originalRequest = request.getOriginalRequest();
+        if (originalRequest != null && originalRequest.getRequestCredentials() != null) {
+            credentials = originalRequest.getRequestCredentials();
+        }
+
+        ExecutionContext executionContext = createExecutionContext();
+        executionContext.setSigner(createSigner(request, bucket, key));
+        executionContext.setCredentials(credentials);
+
+        return client.execute(request, responseHandler, errorResponseHandler, executionContext);
+    }
+
+
 }
