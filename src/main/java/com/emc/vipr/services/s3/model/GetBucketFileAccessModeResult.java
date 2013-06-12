@@ -2,7 +2,7 @@ package com.emc.vipr.services.s3.model;
 
 import com.emc.vipr.services.s3.model.ViPRConstants.FileAccessMode;
 
-public class GetAccessModeResult {
+public class GetBucketFileAccessModeResult {
 	private FileAccessMode accessMode;
 
 	/**
