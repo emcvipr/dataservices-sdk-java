@@ -33,7 +33,6 @@ public class NamespaceRequestHandler implements RequestHandler {
 	/* (non-Javadoc)
 	 * @see com.amazonaws.handlers.RequestHandler#beforeRequest(com.amazonaws.Request)
 	 */
-	@Override
 	public void beforeRequest(Request<?> request) {
 		request.addHeader(ViPRConstants.NAMESPACE_HEADER, namespace);
 	}
@@ -41,7 +40,6 @@ public class NamespaceRequestHandler implements RequestHandler {
 	/* (non-Javadoc)
 	 * @see com.amazonaws.handlers.RequestHandler#afterResponse(com.amazonaws.Request, java.lang.Object, com.amazonaws.util.TimingInfo)
 	 */
-	@Override
 	public void afterResponse(Request<?> request, Object response,
 			TimingInfo timingInfo) {
 	}
@@ -49,7 +47,6 @@ public class NamespaceRequestHandler implements RequestHandler {
 	/* (non-Javadoc)
 	 * @see com.amazonaws.handlers.RequestHandler#afterError(com.amazonaws.Request, java.lang.Exception)
 	 */
-	@Override
 	public void afterError(Request<?> request, Exception e) {
 	}
 
