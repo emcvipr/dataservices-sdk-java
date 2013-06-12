@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.emc.vipr.services.s3.model.ViPRConstants.FileAccessMode;
 
-public class PutAccessModeResult {
+public class SetBucketFileAccessModeResult {
 	private FileAccessMode accessMode;
 	private long fileAccessDuration;
 	private List<String> hostList;

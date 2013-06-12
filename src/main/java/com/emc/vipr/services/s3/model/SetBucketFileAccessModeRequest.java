@@ -7,7 +7,7 @@ import com.emc.vipr.services.s3.model.ViPRConstants.FileAccessProtocol;
 import java.util.Arrays;
 import java.util.List;
 
-public class PutAccessModeRequest extends AmazonWebServiceRequest {
+public class SetBucketFileAccessModeRequest extends AmazonWebServiceRequest {
     private String bucketName;
     private FileAccessMode accessMode;
     private FileAccessProtocol accessProtocol;

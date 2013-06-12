@@ -70,7 +70,9 @@ public class ViPRResponsesSaxParser extends XmlResponsesSaxParser {
 
         @Override
         public void startElement(String uri, String name, String qName, Attributes attrs) {
-            if (name.equals("mountPoints")) {
+            if (name.equals("fileaccess_response")) {
+                // expected, but no action
+            } else if (name.equals("mountPoints")) {
                 text.setLength(0);
             } else if (name.equals("hasMore")) {
                 text.setLength(0);
