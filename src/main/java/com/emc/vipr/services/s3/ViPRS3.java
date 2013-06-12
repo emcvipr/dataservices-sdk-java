@@ -9,15 +9,8 @@ import java.io.InputStream;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.emc.vipr.services.s3.model.AppendObjectRequest;
-import com.emc.vipr.services.s3.model.AppendObjectResult;
-import com.emc.vipr.services.s3.model.GetAccessModeResult;
-import com.emc.vipr.services.s3.model.GetFileAccessRequest;
+import com.emc.vipr.services.s3.model.*;
 import com.emc.vipr.services.s3.model.GetFileAccessResult;
-import com.emc.vipr.services.s3.model.PutAccessModeRequest;
-import com.emc.vipr.services.s3.model.PutAccessModeResult;
-import com.emc.vipr.services.s3.model.UpdateObjectRequest;
-import com.emc.vipr.services.s3.model.UpdateObjectResult;
 
 /**
  * @author cwikj
