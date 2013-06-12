@@ -79,6 +79,11 @@ public class BasicS3Tests {
         
         vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
         
+        ObjectMetadata om2 = vipr.getObjectMetadata(TEST_BUCKET, key);
+        Map<String,String> meta = om2.getUserMetadata();
+        assertEquals("Metadata name1 incorrect on HEAD", "value1", meta.get("name1"));
+        assertEquals("Metadata name2 incorrect on HEAD", "value2", meta.get("name2"));
+        
         S3Object s3o = vipr.getObject(TEST_BUCKET, key);
         InputStream in = s3o.getObjectContent();
         data = new byte[data.length];
@@ -87,9 +92,9 @@ public class BasicS3Tests {
         String outString = new String(data);
         assertEquals("String not equal", testString, outString);
                 
-        Map<String,String> meta = s3o.getObjectMetadata().getUserMetadata();
-        assertEquals("Metadata name1 incorrect", "value1", meta.get("name1"));
-        assertEquals("Metadata name2 incorrect", "value2", meta.get("name2"));
+        meta = s3o.getObjectMetadata().getUserMetadata();
+        assertEquals("Metadata name1 incorrect on GET", "value1", meta.get("name1"));
+        assertEquals("Metadata name2 incorrect on GET", "value2", meta.get("name2"));
         
         vipr.deleteObject(TEST_BUCKET, key);
         
