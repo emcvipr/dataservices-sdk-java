@@ -16,8 +16,8 @@ import static org.junit.Assert.*;
 /*
  * Test the ViPR-specific file access feature for S3
  */
-public class ViPRS3FileAccessTests {
-    private static Log log = LogFactory.getLog(ViPRS3FileAccessTests.class);
+public class ViPRS3FileAccessTest {
+    private static Log log = LogFactory.getLog(ViPRS3FileAccessTest.class);
 
     private ViPRS3Client s3;
 

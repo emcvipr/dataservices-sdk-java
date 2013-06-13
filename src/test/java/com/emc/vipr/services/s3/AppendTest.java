@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,6 +48,9 @@ public class AppendTest {
         }
     }
     
+    /**
+     * Basic append test.
+     */
     @Test
     public void testAppend() throws Exception {
         String key = "testkey";
@@ -87,21 +89,29 @@ public class AppendTest {
         vipr.deleteObject(TEST_BUCKET, key);
     }
     
+    /**
+     * Tests appending to a zero byte object.
+     */
     @Test
     public void testAppendEmptyObject() throws Exception {
         String key = "testkey";
         String testString = "Hello World!";
         
-        PutObjectRequest por = new PutObjectRequest(TEST_BUCKET, key, "");
+        byte[] empty = new byte[0];
+        ObjectMetadata om = new ObjectMetadata();
+        om.setContentLength(0);
+        PutObjectRequest por = new PutObjectRequest(TEST_BUCKET, 
+                key, new ByteArrayInputStream(empty), om);
         
         // Create Object
         vipr.putObject(por);
         
         // Append Object
-        ObjectMetadata om = new ObjectMetadata();
+        om = new ObjectMetadata();
         byte[] data = testString.getBytes();
         om.setContentLength(data.length);
-        AppendObjectResult appendRes = vipr.appendObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        AppendObjectResult appendRes = vipr.appendObject(TEST_BUCKET, key, 
+                new ByteArrayInputStream(data), om);
         
         assertEquals("Append offset incorrect", 0, appendRes.getAppendOffset());
         
@@ -123,6 +133,10 @@ public class AppendTest {
         
     }
     
+    /**
+     * Tests appending to an object with parallel threads.  The order of appends is not
+     * guaranteed, but the appends should all succeed and be atomic.
+     */
     @Test
     public void testParallelAppends() throws Exception {
         String key = "parallel";
@@ -130,7 +144,11 @@ public class AppendTest {
         int threads = 8;
         
         // Create an empty object.
-        PutObjectRequest por = new PutObjectRequest(TEST_BUCKET, key, "");
+        byte[] empty = new byte[0];
+        ObjectMetadata om = new ObjectMetadata();
+        om.setContentLength(0);
+        PutObjectRequest por = new PutObjectRequest(TEST_BUCKET, 
+                key, new ByteArrayInputStream(empty), om);
         vipr.putObject(por);       
         
         Set<ParallelAppend> ops = new HashSet<AppendTest.ParallelAppend>();
@@ -187,6 +205,9 @@ public class AppendTest {
         }
     }
     
+    /**
+     * Inner class used to execute the parallel appends.
+     */
     class ParallelAppend implements Callable<AppendObjectResult> {
         private byte[] data;
         private String key;

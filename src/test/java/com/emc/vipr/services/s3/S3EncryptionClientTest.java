@@ -16,7 +16,7 @@ import com.amazonaws.services.s3.model.S3Object;
 /**
  * Test using the S3 Encryption Client with ViPR.
  */
-public class S3EncryptionClientTests {
+public class S3EncryptionClientTest {
     AmazonS3EncryptionClient s3;
     
     private static final String TEST_BUCKET = "basic-s3-encryption-tests";

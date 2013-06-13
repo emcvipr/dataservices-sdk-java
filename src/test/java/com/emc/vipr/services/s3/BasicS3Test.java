@@ -18,7 +18,7 @@ import com.amazonaws.services.s3.model.S3Object;
  * will look for a viprs3.properties file on the classpath and use it to configure the
  * connection to ViPR.
  */
-public class BasicS3Tests {
+public class BasicS3Test {
     ViPRS3Client vipr;
     
     private static final String TEST_BUCKET = "basic-s3-tests";

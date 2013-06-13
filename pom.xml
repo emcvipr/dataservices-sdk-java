@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
     <name>ViPR Data Services SDK for Java</name>
     <version>1.0.0</version>
-    <description>The Amazon Web Services SDK for Java provides Java APIs for building software on AWS’ cost-effective, scalable, and reliable infrastructure products. The AWS Java SDK allows developers to code against APIs for all of Amazon's infrastructure web services (Amazon S3, Amazon EC2, Amazon SQS, Amazon Relational Database Service, Amazon AutoScaling, etc).</description>
+    <description>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR data services.</description>
     <url>http://www.emc.com/vipr</url>
 
     <scm>
@@ -63,8 +63,8 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <source>1.5</source>
-              <target>1.5</target>
+              <source>1.6</source>
+              <target>1.6</target>
               <encoding>UTF-8</encoding>
             </configuration>
           </plugin>

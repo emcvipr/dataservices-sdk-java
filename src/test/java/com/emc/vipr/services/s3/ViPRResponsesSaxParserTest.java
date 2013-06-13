@@ -8,7 +8,7 @@ import org.junit.Test;
 /*
  * Tests parsing ViPR-specific S3 XML responses.
  */
-public class ViPRResponsesSaxParserTests {
+public class ViPRResponsesSaxParserTest {
     @Test
     public void testFileAccessResult() throws Exception {
         String rawXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
