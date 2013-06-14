@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
@@ -41,7 +42,8 @@ public class ViPRS3FileAccessTest {
             request.setAccessMode(ViPRConstants.FileAccessMode.ReadOnly);
             request.setAccessProtocol(ViPRConstants.FileAccessProtocol.NFS);
             request.setFileAccessDuration(300); // seconds
-            request.setUser("arnetc"); // restrictions??
+            request.setHostList(Arrays.asList("10.6.143.99"));
+            request.setUser("501"); // restrictions??
 
             // change mode to read-only
             SetBucketFileAccessModeResult result = s3.setBucketFileAccessMode(request);
@@ -115,36 +117,23 @@ public class ViPRS3FileAccessTest {
      * waits until the target access mode is completely transitioned on the specified bucket.
      *
      * @param bucketName bucket name
-     * @param accessMode target access mode to wait for (ReadOnly, ReadWrite, or Disabled)
+     * @param targetMode target access mode to wait for (ReadOnly, ReadWrite, or Disabled)
      * @param timeout    after the specified number of milliseconds, this method will throw a TimeoutException
      * @throws InterruptedException if interrupted while sleeping between GET intervals
      * @throws TimeoutException     if the specified timeout is reached before transition is complete
      */
-    protected void waitForTransition(String bucketName, ViPRConstants.FileAccessMode accessMode, int timeout) throws InterruptedException, TimeoutException {
+    protected void waitForTransition(String bucketName, ViPRConstants.FileAccessMode targetMode, int timeout) throws InterruptedException, TimeoutException {
         long start = System.currentTimeMillis(), interval = 500;
         while (true) {
             GetBucketFileAccessModeResult result = s3.getBucketFileAccessMode(bucketName);
-            if (accessMode == result.getAccessMode()) return; // transition is complete
+            if (targetMode == result.getAccessMode()) return; // transition is complete
 
-            // TODO: make FileAccessMode aware of transition states
-            ViPRConstants.FileAccessMode transitionMode;
-            switch (accessMode) {
-                case ReadOnly:
-                    transitionMode = ViPRConstants.FileAccessMode.SwitchingToReadOnly;
-                    break;
-                case ReadWrite:
-                    transitionMode = ViPRConstants.FileAccessMode.SwitchingToReadWrite;
-                    break;
-                case Disabled:
-                    transitionMode = ViPRConstants.FileAccessMode.SwitchingToDisabled;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid target mode: " + accessMode);
-            }
+            if (targetMode.isTransitionState())
+                throw new IllegalArgumentException("Invalid target mode: " + targetMode);
 
-            if (transitionMode != result.getAccessMode())
-                throw new RuntimeException(String.format("Expected transition mode %s for target mode %s, but got %s instead",
-                        transitionMode, accessMode, result.getAccessMode()));
+            if (!result.getAccessMode().isTransitionState() || !result.getAccessMode().transitionsToTarget(targetMode))
+                throw new RuntimeException(String.format("Bucket %s in mode %s will never get to mode %s",
+                        bucketName, result.getAccessMode(), targetMode));
 
             // if we've reached our timeout
             long runTime = System.currentTimeMillis() - start;

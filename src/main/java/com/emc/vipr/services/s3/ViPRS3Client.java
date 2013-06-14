@@ -41,6 +41,7 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
     private S3ErrorResponseHandler errorResponseHandler = new S3ErrorResponseHandler();
 
     private AWSCredentialsProvider awsCredentialsProvider;
+    private NamespaceRequestHandler nsRequestHandler;
 
 	private String namespace;
 
@@ -115,58 +116,70 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
 
 
 
-	public UpdateObjectResult updateObject(String bucketName, String key,
-			File file, long startOffset) throws AmazonClientException {
-		UpdateObjectRequest request = new UpdateObjectRequest(bucketName, key, file).withUpdateOffset(startOffset);
+    public UpdateObjectResult updateObject(String bucketName, String key,
+            File file, long startOffset) throws AmazonClientException,
+            AmazonServiceException {
+        UpdateObjectRequest request = new UpdateObjectRequest(bucketName, key,
+                file).withUpdateOffset(startOffset);
 
-		return updateObject(request);
-	}
+        return updateObject(request);
+    }
 
-	public UpdateObjectResult updateObject(String bucketName, String key,
-			InputStream input, ObjectMetadata metadata, long startOffset)
-			throws AmazonClientException {
-		UpdateObjectRequest request = new UpdateObjectRequest(bucketName, key, input, metadata).withUpdateOffset(startOffset);
+    public UpdateObjectResult updateObject(String bucketName, String key,
+            InputStream input, ObjectMetadata metadata, long startOffset)
+            throws AmazonClientException, AmazonServiceException {
+        UpdateObjectRequest request = new UpdateObjectRequest(bucketName, key,
+                input, metadata).withUpdateOffset(startOffset);
 
-		return updateObject(request);
-	}
+        return updateObject(request);
+    }
 
-	public UpdateObjectResult updateObject(UpdateObjectRequest request) {
-            ObjectMetadata returnedMetadata = doPut(request);
-            UpdateObjectResult result = new UpdateObjectResult();
-            result.setETag(returnedMetadata.getETag());
-            result.setVersionId(returnedMetadata.getVersionId());
-            result.setServerSideEncryption(returnedMetadata.getServerSideEncryption());
-            result.setExpirationTime(returnedMetadata.getExpirationTime());
-            result.setExpirationTimeRuleId(returnedMetadata.getExpirationTimeRuleId());
-            return result;
-	}
+    public UpdateObjectResult updateObject(UpdateObjectRequest request)
+            throws AmazonClientException, AmazonServiceException {
+        ObjectMetadata returnedMetadata = doPut(request);
+        UpdateObjectResult result = new UpdateObjectResult();
+        result.setETag(returnedMetadata.getETag());
+        result.setVersionId(returnedMetadata.getVersionId());
+        result.setServerSideEncryption(returnedMetadata
+                .getServerSideEncryption());
+        result.setExpirationTime(returnedMetadata.getExpirationTime());
+        result.setExpirationTimeRuleId(returnedMetadata
+                .getExpirationTimeRuleId());
+        return result;
+    }
 
+    public AppendObjectResult appendObject(String bucketName, String key,
+            File file) throws AmazonClientException, AmazonServiceException {
+        AppendObjectRequest request = new AppendObjectRequest(bucketName, key,
+                file);
 
-	public AppendObjectResult appendObject(String bucketName, String key,
-			File file) throws AmazonClientException {
-		AppendObjectRequest request = new AppendObjectRequest(bucketName, key, file);
+        return appendObject(request);
+    }
 
-		return appendObject(request);
-	}
+    public AppendObjectResult appendObject(String bucketName, String key,
+            InputStream input, ObjectMetadata metadata)
+            throws AmazonClientException, AmazonServiceException {
+        AppendObjectRequest request = new AppendObjectRequest(bucketName, key,
+                input, metadata);
 
-	public AppendObjectResult appendObject(String bucketName, String key,
-			InputStream input, ObjectMetadata metadata)
-			throws AmazonClientException {
-		AppendObjectRequest request = new AppendObjectRequest(bucketName, key, input, metadata);
+        return appendObject(request);
+    }
 
-		return appendObject(request);
-	}
-
-	public AppendObjectResult appendObject(AppendObjectRequest request) {
-            ObjectMetadata returnedMetadata = doPut(request);
-            AppendObjectResult result = new AppendObjectResult();
-            result.setETag(returnedMetadata.getETag());
-            result.setVersionId(returnedMetadata.getVersionId());
-            result.setServerSideEncryption(returnedMetadata.getServerSideEncryption());
-            result.setExpirationTime(returnedMetadata.getExpirationTime());
-            result.setExpirationTimeRuleId(returnedMetadata.getExpirationTimeRuleId());
-            result.setAppendOffset(Long.parseLong(""+returnedMetadata.getRawMetadata().get(ViPRConstants.APPEND_OFFSET_HEADER)));
-            return result;
+    public AppendObjectResult appendObject(AppendObjectRequest request)
+            throws AmazonClientException, AmazonServiceException {
+        ObjectMetadata returnedMetadata = doPut(request);
+        AppendObjectResult result = new AppendObjectResult();
+        result.setETag(returnedMetadata.getETag());
+        result.setVersionId(returnedMetadata.getVersionId());
+        result.setServerSideEncryption(returnedMetadata
+                .getServerSideEncryption());
+        result.setExpirationTime(returnedMetadata.getExpirationTime());
+        result.setExpirationTimeRuleId(returnedMetadata
+                .getExpirationTimeRuleId());
+        result.setAppendOffset(Long.parseLong(""
+                + returnedMetadata.getRawMetadata().get(
+                        ViPRConstants.APPEND_OFFSET_HEADER)));
+        return result;
     }
 
     public SetBucketFileAccessModeResult setBucketFileAccessMode(SetBucketFileAccessModeRequest putAccessModeRequest)
@@ -294,6 +307,14 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
         return new ViPRS3Signer(request.getHttpMethod().toString(), resourcePath);
     }
 
+    /**
+     * Executes a (Subclass of) PutObjectRequest.  In particular, we check for subclasses
+     * of the UpdateObjectRequest and inject the value of the Range header.  This version
+     * also returns the raw ObjectMetadata for the response so callers can construct
+     * their own result objects.
+     * @param putObjectRequest the request to execute
+     * @return an ObjectMetadata containing the response headers.
+     */
     private ObjectMetadata doPut(PutObjectRequest putObjectRequest) {
         assertParameterNotNull(putObjectRequest, "The PutObjectRequest parameter must be specified when uploading an object");
 
@@ -472,16 +493,28 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
 		return namespace;
 	}
 
-	/**
-	 * Sets the ViPR namespace to use.  Generally, this will be
-	 * automatically determined by the endpoint of the underlying
-	 * S3 client in the form of {namespace}.company.com, but if this
-	 * is not possible, it can be overridden by setting this property.
-	 * @param namespace the namespace to set
-	 */
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
+    /**
+     * Sets the ViPR namespace to use. Generally, this will be automatically
+     * determined by the endpoint of the underlying S3 client in the form of
+     * {namespace}.company.com, but if this is not possible, it can be
+     * overridden by setting this property.
+     * 
+     * @param namespace
+     *            the namespace to set
+     */
+    public synchronized void setNamespace(String namespace) {
+        this.namespace = namespace;
+        if (nsRequestHandler != null) {
+            // Remove the old handler
+            removeRequestHandler(nsRequestHandler);
+            nsRequestHandler = null;
+        }
+        if (namespace != null) {
+            // Create a new handler
+            nsRequestHandler = new NamespaceRequestHandler(namespace);
+            addRequestHandler(nsRequestHandler);
+        }
+    }
 
     /**
      * <p>

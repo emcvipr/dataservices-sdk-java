@@ -13,6 +13,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Overrides XmlResponsesSaxParser to provide additional parsing for ViPR-specific S3 XML responses.
+ */
 public class ViPRResponsesSaxParser extends XmlResponsesSaxParser {
     private static final Log log = LogFactory.getLog(ViPRResponsesSaxParser.class);
 

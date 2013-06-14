@@ -1,9 +1,6 @@
 package com.emc.vipr.services.s3.model;
 
 public interface ViPRConstants {
-    enum FileAccessMode {Disabled, ReadOnly, ReadWrite, SwitchingToDisabled, SwitchingToReadOnly, SwitchingToReadWrite}
-
-    enum FileAccessProtocol {NFS, CIFS}
 
     // Header names
     static final String EMC_PREFIX = "x-emc-";
@@ -25,4 +22,31 @@ public interface ViPRConstants {
     static final String FILE_ACCESS_PARAMETER = "fileaccess";
     static final String MARKER_PARAMETER = "marker";
     static final String MAX_KEYS_PARAMETER = "max-keys";
+
+    enum FileAccessMode {
+        Disabled(false, null),
+        ReadOnly(false, null),
+        ReadWrite(false, null),
+        switchingToDisabled(true, Disabled),
+        switchingToReadOnly(true, ReadOnly),
+        switchingToReadWrite(true, ReadWrite);
+
+        private boolean transitionState;
+        private FileAccessMode targetState;
+
+        private FileAccessMode(boolean transitionState, FileAccessMode targetState) {
+            this.transitionState = transitionState;
+            this.targetState = targetState;
+        }
+
+        public boolean isTransitionState() {
+            return transitionState;
+        }
+
+        public boolean transitionsToTarget(FileAccessMode targetState) {
+            return targetState == this.targetState;
+        }
+    }
+
+    enum FileAccessProtocol {NFS, CIFS}
 }
