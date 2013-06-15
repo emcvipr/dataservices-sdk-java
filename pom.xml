@@ -1,75 +1,70 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.emc</groupId>
-    <artifactId>vipr-data-services-sdk</artifactId>
-    <packaging>jar</packaging>
-    <name>ViPR Data Services SDK for Java</name>
-    <version>0.0.5</version>
-    <description>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR data services.</description>
-    <url>http://www.emc.com/vipr</url>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.emc.vipr</groupId>
+  <artifactId>vipr-data-services-sdk</artifactId>
+  <version>0.1</version>
+  <packaging>pom</packaging>
+  <name>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR data services.</name>
 
-    <scm>
-    	<!-- TBD -->
-        <url>https://github.com/emcvipr/dataservices-s3-java</url>
-    </scm>
+  <modules>
+    <module>s3-client</module>
+    <module>s3-sample</module>
+  </modules>
 
-	<!-- TBD, assuming BSD for now -->
-    <licenses>
-        <license>
-            <name>BSD New</name>
-            <url>http://opensource.org/licenses/BSD-3-Clause</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+  <scm>
+    <url>https://github.com/emcvipr/dataservices-s3-java</url>
+  </scm>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.4.1</version>
-        </dependency>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-        <!-- JUnit is needed to compile the tests -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-        	<groupId>commons-logging</groupId>
-        	<artifactId>commons-logging</artifactId>
-        	<version>1.1.1</version>
-        </dependency>
-    </dependencies>
+  <developers>
+    <developer>
+      <id>emc</id>
+      <organization>EMC</organization>
+      <organizationUrl>http://www.emc.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
 
-    <developers>
-        <developer>
-            <id>emc</id>
-            <organization>EMC</organization>
-            <organizationUrl>http://www.emc.com</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
 
-    <build>
-      <pluginManagement>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <source>1.6</source>
-              <target>1.6</target>
-              <encoding>UTF-8</encoding>
-            </configuration>
-          </plugin>
-        </plugins>
-      </pluginManagement>
-    </build>
+      </plugins>
+    </pluginManagement>
+  </build>
 
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+  </dependencies>
 </project>
