@@ -80,11 +80,6 @@ public interface ViPRS3 {
      * Updates an existing object. The given data will be overlaid on the
      * existing object starting at startOffset.
      * 
-     * @param bucketName
-     *            The name of an existing bucket, to which you have
-     *            {@link Permission#Write} permission.
-     * @param key
-     *            The key in the bucket to update.
      * @param request
      *            The configured {@link UpdateObjectRequest} to execute.
      * @return A {@link UpdateObjectResult} containing the data returned from
@@ -171,11 +166,6 @@ public interface ViPRS3 {
      * exact location, use updateObject but note in that case with concurrent
      * writes, the last writer will "win".
      * 
-     * @param bucketName
-     *            The name of an existing bucket, to which you have
-     *            {@link Permission#Write} permission.
-     * @param key
-     *            The key in the bucket to append to.
      * @param request
      *            the configured {@link AppendObjectRequest} to execute.
      * @return A {@link AppendObjectResult} containing the data returned from
