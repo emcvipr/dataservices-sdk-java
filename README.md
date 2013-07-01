@@ -1,4 +1,8 @@
-dataservices-s3-java
+dataservices-sdk-java
 ====================
 
-Java client library for the S3 protocol of ViPR object data services. 
+Java SDK for ViPR object data services. 
+
+- s3-client - enhanced S3 client library, with additional support for ViPR-specific operations.
+
+- s3-sample - sample application demonstrating the use of s3-client.
