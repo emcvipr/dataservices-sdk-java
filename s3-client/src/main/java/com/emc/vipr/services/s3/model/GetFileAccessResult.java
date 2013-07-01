@@ -9,7 +9,6 @@ public class GetFileAccessResult {
     private FileAccessMode accessMode;
     private FileAccessProtocol accessProtocol;
     private long fileAccessDuration;
-    private String marker;
     private List<String> hosts;
     private String user;
 
@@ -59,20 +58,6 @@ public class GetFileAccessResult {
      */
     public void setFileAccessDuration(long fileAccessDuration) {
         this.fileAccessDuration = fileAccessDuration;
-    }
-
-    /**
-     * @return the marker
-     */
-    public String getMarker() {
-        return marker;
-    }
-
-    /**
-     * @param marker the marker to set
-     */
-    public void setMarker(String marker) {
-        this.marker = marker;
     }
 
     /**

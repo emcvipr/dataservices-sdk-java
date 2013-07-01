@@ -35,7 +35,7 @@ public class S3EncryptionClientTest {
         }
     }
     
-    @Test
+//    @Test
     public void testPutDeleteObjectEncrypted() throws Exception {
         String key = "testkey";
         String testString = "Hello World!";

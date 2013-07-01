@@ -1,5 +1,7 @@
 package com.emc.vipr.services.s3;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,10 +50,25 @@ public class S3ClientFactory {
     public static final String PROP_PROXY_HOST = "vipr.proxy.host";
     public static final String PROP_PROXY_PORT = "vipr.proxy.port";
     
+    /**
+     * Locates and loads the properties file for the test configuration.  This file can
+     * reside in one of two places: somewhere in the CLASSPATH or in the user's home
+     * directory.
+     * @return the contents of the properties file as a {@link Properties} object.
+     * @throws FileNotFoundException if the file was not found
+     * @throws IOException if there was an error reading the file.
+     */
     public static Properties getProperties() throws FileNotFoundException, IOException {
         InputStream in = S3ClientFactory.class.getClassLoader().getResourceAsStream(VIPR_PROPERTIES_FILE);
         if(in == null) {
-            throw new FileNotFoundException(VIPR_PROPERTIES_FILE);
+            // Check in home directory
+            File homeProps = new File(System.getProperty("user.home") + File.separator + 
+                    VIPR_PROPERTIES_FILE);
+            if(homeProps.exists()) {
+                in = new FileInputStream(homeProps);
+            } else {
+                throw new FileNotFoundException(VIPR_PROPERTIES_FILE);
+            }
         }
         
         Properties props = new Properties();

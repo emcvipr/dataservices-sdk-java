@@ -53,6 +53,7 @@ public class ViPRResponsesSaxParser extends XmlResponsesSaxParser {
                <relativePath>blah</relativePath>
                <owner>some_girl</owner>
             </objects>
+            <hasMore>false</hasMore>
         </fileaccess_response>
      */
     public class FileAccessResultHandler extends DefaultHandler {

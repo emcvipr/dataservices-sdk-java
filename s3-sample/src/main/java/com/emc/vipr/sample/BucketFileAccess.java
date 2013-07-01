@@ -23,6 +23,8 @@ public class BucketFileAccess {
         String bucketName = "temp.vipr-fileaccess";
         String key1 = "test1.txt";
         String key2 = "test2.txt";
+        String key3 = "test3.txt";
+        String key4 = "test4.txt";
         String content = "Hello World!";
         String clientHost = "10.10.10.10"; // change to a real client to test
         String clientUid = "501"; // change to your client uid to test
@@ -32,6 +34,8 @@ public class BucketFileAccess {
             s3.createBucket(bucketName);
             s3.putObject(bucketName, key1, new StringInputStream(content), null);
             s3.putObject(bucketName, key2, new StringInputStream(content), null);
+            s3.putObject(bucketName, key3, new StringInputStream(content), null);
+            s3.putObject(bucketName, key4, new StringInputStream(content), null);
 
             SetBucketFileAccessModeRequest request = new SetBucketFileAccessModeRequest();
             request.setBucketName(bucketName);
@@ -72,21 +76,35 @@ public class BucketFileAccess {
             // details
             GetFileAccessRequest fileAccessRequest = new GetFileAccessRequest();
             fileAccessRequest.setBucketName(bucketName);
-            GetFileAccessResult fileAccessResult = s3
-                    .getFileAccess(fileAccessRequest);
 
-            // here are your mount points
-            SampleUtils.log("NFS mount points:");
-            for (String mountPoint : fileAccessResult.getMountPoints()) {
-                SampleUtils.log("    %s", mountPoint);
-            }
+            GetFileAccessResult fileAccessResult;
+            int waitMs = 250;
 
-            // here are the paths to each object
-            SampleUtils.log("paths to objects:");
-            for (com.emc.vipr.services.s3.model.Object object : fileAccessResult
-                    .getObjects()) {
-                SampleUtils.log("    %s", object.getRelativePath());
-            }
+            // objects are asynchronously prepared and returned in the list as they become
+            // available. this block will iterate until we have paths to all objects in
+            // the bucket.
+            do {
+                fileAccessResult = s3.getFileAccess(fileAccessRequest);
+
+                // here are your mount points
+                SampleUtils.log("NFS mount points:");
+                for (String mountPoint : fileAccessResult.getMountPoints()) {
+                    SampleUtils.log("    %s", mountPoint);
+                }
+
+                // here are the paths to each object
+                SampleUtils.log("paths to objects:");
+                for (com.emc.vipr.services.s3.model.Object object : fileAccessResult
+                        .getObjects()) {
+                    SampleUtils.log("    %s", object.getRelativePath());
+                }
+
+                if (fileAccessResult.isTruncated()) {
+                    SampleUtils.log("list of objects was truncated; will try for more objects in %dms", waitMs);
+                    Thread.sleep(waitMs);
+                    fileAccessRequest.setMarker(fileAccessResult.getLastKey());
+                }
+            } while (fileAccessResult.isTruncated());
 
             // change mode back to disabled (must do this before going to
             // read-write)
@@ -137,10 +155,6 @@ public class BucketFileAccess {
         }
     }
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         BucketFileAccess instance = new BucketFileAccess();
         instance.runSample();
