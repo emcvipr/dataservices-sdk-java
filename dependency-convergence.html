@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>ViPR Data Services SDK for Java - Continuous Integration</title>
+    <title>ViPR Data Services SDK for Java - Reactor Dependency Convergence</title>
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
@@ -69,8 +69,8 @@
                           <a href="dependency-info.html" title="Dependency Information">Dependency Information</a>
             </li>
                       <li class="none">
-                          <a href="dependency-convergence.html" title="Dependency Convergence">Dependency Convergence</a>
-            </li>
+            <strong>Dependency Convergence</strong>
+          </li>
                       <li class="none">
                           <a href="source-repository.html" title="Source Repository">Source Repository</a>
             </li>
@@ -81,8 +81,8 @@
                           <a href="issue-tracking.html" title="Issue Tracking">Issue Tracking</a>
             </li>
                       <li class="none">
-            <strong>Continuous Integration</strong>
-          </li>
+                          <a href="integration.html" title="Continuous Integration">Continuous Integration</a>
+            </li>
                       <li class="none">
                           <a href="plugins.html" title="Project Plugins">Project Plugins</a>
             </li>
@@ -114,8 +114,91 @@
     <div id="bodyColumn">
       <div id="contentBox">
         <div class="section">
-<h2>Continuous Integration<a name="Continuous_Integration"></a></h2><a name="Continuous_Integration"></a>
-<p>No continuous integration management system is defined. Please check back at a later date.</p></div>
+<h2>Reactor Dependency Convergence<a name="Reactor_Dependency_Convergence"></a></h2>
+<table border="0" class="bodyTable"><caption>
+  <b>Legend:</b>
+</caption>
+<tr class="a">
+<td><img alt="success" src="images/icon_success_sml.gif" /></td>
+<td>All projects share one version of the dependency.</td></tr>
+<tr class="b">
+<td><img alt="error" src="images/icon_error_sml.gif" /></td>
+<td>At least one project has a differing version of the dependency.</td></tr></table><br />
+<table border="0" class="bodyTable"><caption>
+  <b>Statistics:</b>
+</caption>
+<tr class="a">
+<th>Number of sub-projects:</th>
+<td>3</td></tr>
+<tr class="b">
+<th>Number of dependencies (NOD):</th>
+<td>4</td></tr>
+<tr class="a">
+<th>Number of unique artifacts (NOA):</th>
+<td>4</td></tr>
+<tr class="b">
+<th>Number of SNAPSHOT artifacts (NOS):</th>
+<td>0</td></tr>
+<tr class="a">
+<th>Convergence (NOD/NOA):</th>
+<td><img alt="success" src="images/icon_success_sml.gif" />&#160;<b>100%</b></td></tr>
+<tr class="b">
+<th>Ready for Release (100% Convergence and no SNAPSHOTS):</th>
+<td><img alt="success" src="images/icon_success_sml.gif" />&#160;<b>Success</b></td></tr></table></div>
+<div class="section">
+<h3>Dependencies used in sub-projects<a name="Dependencies_used_in_sub-projects"></a></h3>
+<div class="section">
+<h4>com.amazonaws:aws-java-sdk<a name="com.amazonaws:aws-java-sdk"></a></h4>
+<table border="0" class="bodyTable">
+<tr class="a">
+<td><img alt="success" src="images/icon_success_sml.gif" /></td>
+<td>
+<table border="0" class="bodyTable">
+<tr class="b">
+<td width="25%">1.4.1</td>
+<td>
+<ol style="list-style-type: lower-alpha">
+<li>com.emc.vipr:vipr-data-services-s3-client</li></ol></td></tr></table></td></tr></table></div>
+<div class="section">
+<h4>com.emc.vipr:vipr-data-services-s3-client<a name="com.emc.vipr:vipr-data-services-s3-client"></a></h4>
+<table border="0" class="bodyTable">
+<tr class="a">
+<td><img alt="success" src="images/icon_success_sml.gif" /></td>
+<td>
+<table border="0" class="bodyTable">
+<tr class="b">
+<td width="25%">0.1.4-SNAPSHOT</td>
+<td>
+<ol style="list-style-type: lower-alpha">
+<li>com.emc.vipr:vipr-data-services-s3-sample</li></ol></td></tr></table></td></tr></table></div>
+<div class="section">
+<h4>commons-logging:commons-logging<a name="commons-logging:commons-logging"></a></h4>
+<table border="0" class="bodyTable">
+<tr class="a">
+<td><img alt="success" src="images/icon_success_sml.gif" /></td>
+<td>
+<table border="0" class="bodyTable">
+<tr class="b">
+<td width="25%">1.1.1</td>
+<td>
+<ol style="list-style-type: lower-alpha">
+<li>com.emc.vipr:vipr-data-services-s3-client</li>
+<li>com.emc.vipr:vipr-data-services-s3-sample</li>
+<li>com.emc.vipr:vipr-data-services-sdk</li></ol></td></tr></table></td></tr></table></div>
+<div class="section">
+<h4>junit:junit<a name="junit:junit"></a></h4>
+<table border="0" class="bodyTable">
+<tr class="a">
+<td><img alt="success" src="images/icon_success_sml.gif" /></td>
+<td>
+<table border="0" class="bodyTable">
+<tr class="b">
+<td width="25%">4.11</td>
+<td>
+<ol style="list-style-type: lower-alpha">
+<li>com.emc.vipr:vipr-data-services-s3-client</li>
+<li>com.emc.vipr:vipr-data-services-s3-sample</li>
+<li>com.emc.vipr:vipr-data-services-sdk</li></ol></td></tr></table></td></tr></table></div></div>
       </div>
     </div>
     <div class="clear">
