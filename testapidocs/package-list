@@ -1,1 +1,6 @@
+com.emc.acdp.api.test
+com.emc.atmos.api.test
+com.emc.atmos.sync.util.test
+com.emc.atmos.util
+com.emc.esu.test
 com.emc.vipr.services.s3
