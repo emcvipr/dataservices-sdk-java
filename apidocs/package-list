@@ -18,3 +18,7 @@ com.emc.esu.api.rest
 com.emc.esu.sysmgmt
 com.emc.esu.sysmgmt.pox
 com.emc.util
+com.emc.vipr.services.s3
+com.emc.vipr.services.s3.model
+com.sun.jersey.client.apache4
+com.sun.jersey.client.apache4.config

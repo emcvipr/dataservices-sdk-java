@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>ViPR Atmos Client for Java - Reactor Dependency Convergence</title>
+    <title>ViPR Data Services SDK for Java - Reactor Dependency Convergence</title>
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
@@ -17,7 +17,7 @@
   <body class="composite">
     <div id="banner">
                     <div id="bannerLeft">
-                ViPR Atmos Client for Java
+                ViPR Data Services SDK for Java
                 </div>
                     <div class="clear">
         <hr/>
@@ -28,9 +28,9 @@
                     
                 <div class="xleft">
         <span id="publishDate">Last Published: 2013-09-27</span>
-                  &nbsp;| <span id="projectVersion">Version: 2.1.4.0-SNAPSHOT</span>
+                  &nbsp;| <span id="projectVersion">Version: 1.0-SNAPSHOT</span>
                       </div>
-            <div class="xright">                    <a href="${project.url}" title="ViPR Atmos Client for Java">ViPR Atmos Client for Java</a>
+            <div class="xright">                    <a href="${project.url}" title="ViPR Data Services SDK for Java">ViPR Data Services SDK for Java</a>
               
                     
       </div>
@@ -42,15 +42,21 @@
       <div id="navcolumn">
              
                     
-                                <h5>Parent Project</h5>
+                                          <h5>Modules</h5>
                   <ul>
                   <li class="none">
-                          <a href="../index.html" title="ViPR Data Services SDK for Java">ViPR Data Services SDK for Java</a>
+                          <a href="s3-client/index.html" title="ViPR S3 Client for Java">ViPR S3 Client for Java</a>
+            </li>
+                  <li class="none">
+                          <a href="jersey-apache-httpclient4/index.html" title="Custom jersey-apache-httpclient4">Custom jersey-apache-httpclient4</a>
+            </li>
+                  <li class="none">
+                          <a href="atmos-client/index.html" title="ViPR Atmos Client for Java">ViPR Atmos Client for Java</a>
             </li>
           </ul>
                        <h5>Project Documentation</h5>
                   <ul>
-                                                                                                                                                                                                                                                                                                                        <li class="expanded">
+                                                                                                                                                                                                                                                                                                                                          <li class="expanded">
                           <a href="project-info.html" title="Project Information">Project Information</a>
                     <ul>
                       <li class="none">
@@ -85,6 +91,9 @@
             </li>
                       <li class="none">
                           <a href="license.html" title="Project License">Project License</a>
+            </li>
+                      <li class="none">
+                          <a href="modules.html" title="Project Modules">Project Modules</a>
             </li>
                       <li class="none">
                           <a href="team-list.html" title="Project Team">Project Team</a>
@@ -126,49 +135,32 @@
 </caption>
 <tr class="a">
 <th>Number of sub-projects:</th>
-<td>13</td></tr>
+<td>4</td></tr>
 <tr class="b">
 <th>Number of dependencies (NOD):</th>
-<td>33</td></tr>
+<td>16</td></tr>
 <tr class="a">
 <th>Number of unique artifacts (NOA):</th>
-<td>34</td></tr>
+<td>16</td></tr>
 <tr class="b">
 <th>Number of SNAPSHOT artifacts (NOS):</th>
-<td>1</td></tr>
+<td>0</td></tr>
 <tr class="a">
 <th>Convergence (NOD/NOA):</th>
-<td><img alt="error" src="images/icon_error_sml.gif" />&#160;<b>97%</b></td></tr>
+<td><img alt="success" src="images/icon_success_sml.gif" />&#160;<b>100%</b></td></tr>
 <tr class="b">
 <th>Ready for Release (100% Convergence and no SNAPSHOTS):</th>
-<td><img alt="error" src="images/icon_error_sml.gif" />&#160;<b>Error</b><br />You do not have 100% convergence.<br />You have SNAPSHOT dependencies.</td></tr></table></div>
+<td><img alt="success" src="images/icon_success_sml.gif" />&#160;<b>Success</b></td></tr></table></div>
 <div class="section">
 <h3>Dependencies used in sub-projects<a name="Dependencies_used_in_sub-projects"></a></h3>
 <div class="section">
-<h4>c3p0:c3p0<a name="c3p0:c3p0"></a></h4>
+<h4>com.amazonaws:aws-java-sdk<a name="com.amazonaws:aws-java-sdk"></a></h4>
 <table border="0" class="bodyTable">
 <tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
 <tr class="b">
-<td width="25%">0.9.1.2</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>com.amazonaws:aws-java-sdk<a name="com.amazonaws:aws-java-sdk"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td><img alt="error" src="images/icon_error_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td width="25%">1.3.0</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr>
-<tr class="a">
 <td width="25%">1.4.5</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -176,88 +168,35 @@
 <div class="section">
 <h4>com.emc.cdp:rest_model<a name="com.emc.cdp:rest_model"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.0</td>
 <td>
 <ol style="list-style-type: lower-alpha">
 <li>com.emc.vipr:atmos-client</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
-<h4>com.emc.vipr.samples.atmos:atmos-sync<a name="com.emc.vipr.samples.atmos:atmos-sync"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">2.1.4.0-SNAPSHOT</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:directory-monitor</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>com.emc.vipr:atmos-client<a name="com.emc.vipr:atmos-client"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">2.1.4.0-SNAPSHOT</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:acdp-provisioning-tool</li>
-<li>com.emc.vipr.samples.atmos:acdp-report-generator</li>
-<li>com.emc.vipr.samples.atmos:atmos-cleanup</li>
-<li>com.emc.vipr.samples.atmos:atmos-sync</li>
-<li>com.emc.vipr.samples.atmos:orphaned-user-tool</li>
-<li>com.emc.vipr.samples:atmos-threaded-download</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
 <h4>com.emc.vipr:jersey-apache-httpclient4<a name="com.emc.vipr:jersey-apache-httpclient4"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.16-CUSTOM</td>
 <td>
 <ol style="list-style-type: lower-alpha">
 <li>com.emc.vipr:atmos-client</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
-<h4>com.emc.vipr:s3-client<a name="com.emc.vipr:s3-client"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">1.0-SNAPSHOT</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr:s3-sample</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>com.google.code.gson:gson<a name="com.google.code.gson:gson"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">2.0</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
 <h4>com.sun.jersey.contribs:jersey-multipart<a name="com.sun.jersey.contribs:jersey-multipart"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.16</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -265,11 +204,11 @@
 <div class="section">
 <h4>com.sun.jersey:jersey-client<a name="com.sun.jersey:jersey-client"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.16</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -278,89 +217,51 @@
 <div class="section">
 <h4>com.sun.jersey:jersey-core<a name="com.sun.jersey:jersey-core"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.16</td>
 <td>
 <ol style="list-style-type: lower-alpha">
 <li>com.emc.vipr:atmos-client</li>
 <li>com.emc.vipr:jersey-apache-httpclient4</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
-<h4>commons-cli:commons-cli<a name="commons-cli:commons-cli"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">1.2</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:acdp-provisioning-tool</li>
-<li>com.emc.vipr.samples.atmos:acdp-report-generator</li>
-<li>com.emc.vipr.samples.atmos:atmos-cleanup</li>
-<li>com.emc.vipr.samples.atmos:atmos-sync</li>
-<li>com.emc.vipr.samples.atmos:orphaned-user-tool</li>
-<li>com.emc.vipr.samples:atmos-threaded-download</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
 <h4>commons-codec:commons-codec<a name="commons-codec:commons-codec"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.4</td>
 <td>
 <ol style="list-style-type: lower-alpha">
 <li>com.emc.vipr:atmos-client</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
-<h4>commons-csv:commons-csv<a name="commons-csv:commons-csv"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">1.0-SNAPSHOT</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:acdp-report-generator</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
 <h4>commons-logging:commons-logging<a name="commons-logging:commons-logging"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.1.1</td>
 <td>
 <ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:acdp-provisioning-tool</li>
-<li>com.emc.vipr.samples.atmos:acdp-report-generator</li>
-<li>com.emc.vipr.samples.atmos:atmos-cleanup</li>
-<li>com.emc.vipr.samples.atmos:atmos-sync</li>
-<li>com.emc.vipr.samples.atmos:directory-monitor</li>
-<li>com.emc.vipr.samples.atmos:orphaned-user-tool</li>
-<li>com.emc.vipr.samples:atmos-threaded-download</li>
 <li>com.emc.vipr:atmos-client</li>
-<li>com.emc.vipr:atmos-sample</li>
 <li>com.emc.vipr:dataservices</li>
 <li>com.emc.vipr:jersey-apache-httpclient4</li>
-<li>com.emc.vipr:s3-client</li>
-<li>com.emc.vipr:s3-sample</li></ol></td></tr></table></td></tr></table></div>
+<li>com.emc.vipr:s3-client</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
 <h4>commons-logging:commons-logging-api<a name="commons-logging:commons-logging-api"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.1</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -368,73 +269,38 @@
 <div class="section">
 <h4>junit:junit<a name="junit:junit"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">4.11</td>
 <td>
 <ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:acdp-provisioning-tool</li>
-<li>com.emc.vipr.samples.atmos:acdp-report-generator</li>
-<li>com.emc.vipr.samples.atmos:atmos-cleanup</li>
-<li>com.emc.vipr.samples.atmos:atmos-sync</li>
-<li>com.emc.vipr.samples.atmos:directory-monitor</li>
-<li>com.emc.vipr.samples.atmos:orphaned-user-tool</li>
-<li>com.emc.vipr.samples:atmos-threaded-download</li>
 <li>com.emc.vipr:atmos-client</li>
-<li>com.emc.vipr:atmos-sample</li>
 <li>com.emc.vipr:dataservices</li>
 <li>com.emc.vipr:jersey-apache-httpclient4</li>
-<li>com.emc.vipr:s3-client</li>
-<li>com.emc.vipr:s3-sample</li></ol></td></tr></table></td></tr></table></div>
+<li>com.emc.vipr:s3-client</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
 <h4>log4j:log4j<a name="log4j:log4j"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.2.16</td>
 <td>
 <ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:acdp-report-generator</li>
 <li>com.emc.vipr:atmos-client</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>mysql:mysql-connector-java<a name="mysql:mysql-connector-java"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">5.1.18</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>net.sf.jgrapht:jgrapht<a name="net.sf.jgrapht:jgrapht"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">0.8.3</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-cleanup</li>
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
 <div class="section">
 <h4>org.apache.httpcomponents:httpclient<a name="org.apache.httpcomponents:httpclient"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">4.2.2</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -443,11 +309,11 @@
 <div class="section">
 <h4>org.apache.httpcomponents:httpcore<a name="org.apache.httpcomponents:httpcore"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">4.2.2</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -455,11 +321,11 @@
 <div class="section">
 <h4>org.apache.httpcomponents:httpmime<a name="org.apache.httpcomponents:httpmime"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">4.2.2</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -467,11 +333,11 @@
 <div class="section">
 <h4>org.concord:security<a name="org.concord:security"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.1</td>
 <td>
 <ol style="list-style-type: lower-alpha">
@@ -479,111 +345,15 @@
 <div class="section">
 <h4>org.jdom:jdom-legacy<a name="org.jdom:jdom-legacy"></a></h4>
 <table border="0" class="bodyTable">
-<tr class="b">
+<tr class="a">
 <td><img alt="success" src="images/icon_success_sml.gif" /></td>
 <td>
 <table border="0" class="bodyTable">
-<tr class="a">
+<tr class="b">
 <td width="25%">1.1.3</td>
 <td>
 <ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr:atmos-client</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-asm<a name="org.springframework:spring-asm"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-beans<a name="org.springframework:spring-beans"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-context<a name="org.springframework:spring-context"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-context-support<a name="org.springframework:spring-context-support"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-core<a name="org.springframework:spring-core"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-expression<a name="org.springframework:spring-expression"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-jdbc<a name="org.springframework:spring-jdbc"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div>
-<div class="section">
-<h4>org.springframework:spring-tx<a name="org.springframework:spring-tx"></a></h4>
-<table border="0" class="bodyTable">
-<tr class="b">
-<td><img alt="success" src="images/icon_success_sml.gif" /></td>
-<td>
-<table border="0" class="bodyTable">
-<tr class="a">
-<td width="25%">3.1.0.RELEASE</td>
-<td>
-<ol style="list-style-type: lower-alpha">
-<li>com.emc.vipr.samples.atmos:atmos-sync</li></ol></td></tr></table></td></tr></table></div></div>
+<li>com.emc.vipr:atmos-client</li></ol></td></tr></table></td></tr></table></div></div>
       </div>
     </div>
     <div class="clear">
