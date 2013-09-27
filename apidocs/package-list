@@ -1,2 +1,2 @@
-com.emc.vipr.services.s3
-com.emc.vipr.services.s3.model
+com.sun.jersey.client.apache4
+com.sun.jersey.client.apache4.config
