@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>ViPR Data Services SDK for Java - Project Dependencies</title>
+    <title>ViPR S3 Client for Java - Project Dependencies</title>
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
@@ -17,7 +17,7 @@
   <body class="composite">
     <div id="banner">
                     <div id="bannerLeft">
-                ViPR Data Services SDK for Java
+                ViPR S3 Client for Java
                 </div>
                     <div class="clear">
         <hr/>
@@ -30,7 +30,7 @@
         <span id="publishDate">Last Published: 2013-09-27</span>
                   &nbsp;| <span id="projectVersion">Version: 1.0-SNAPSHOT</span>
                       </div>
-            <div class="xright">                    <a href="${project.url}" title="ViPR Data Services SDK for Java">ViPR Data Services SDK for Java</a>
+            <div class="xright">                    <a href="${project.url}" title="ViPR S3 Client for Java">ViPR S3 Client for Java</a>
               
                     
       </div>
@@ -42,27 +42,15 @@
       <div id="navcolumn">
              
                     
-                                          <h5>Modules</h5>
+                                <h5>Parent Project</h5>
                   <ul>
                   <li class="none">
-                          <a href="s3-client/index.html" title="ViPR S3 Client for Java">ViPR S3 Client for Java</a>
-            </li>
-                  <li class="none">
-                          <a href="s3-sample/index.html" title="ViPR S3 Client Samples">ViPR S3 Client Samples</a>
-            </li>
-                  <li class="none">
-                          <a href="jersey-apache-httpclient4/index.html" title="Unnamed - com.emc.vipr:jersey-apache-httpclient4:jar:1.16-CUSTOM">Unnamed - com.emc.vipr:jersey-apache-httpclient4:jar:1.16-CUSTOM</a>
-            </li>
-                  <li class="none">
-                          <a href="atmos-client/index.html" title="ViPR Atmos Client for Java">ViPR Atmos Client for Java</a>
-            </li>
-                  <li class="none">
-                          <a href="atmos-sample/index.html" title="Unnamed - com.emc.vipr:atmos-sample:pom:2.1.4.0-SNAPSHOT">Unnamed - com.emc.vipr:atmos-sample:pom:2.1.4.0-SNAPSHOT</a>
+                          <a href="../index.html" title="ViPR Data Services SDK for Java">ViPR Data Services SDK for Java</a>
             </li>
           </ul>
                        <h5>Project Documentation</h5>
                   <ul>
-                                                                                                                                                                                                                                                                                                                                          <li class="expanded">
+                                                                                                                                                                                                                                                                                                                        <li class="expanded">
                           <a href="project-info.html" title="Project Information">Project Information</a>
                     <ul>
                       <li class="none">
@@ -97,9 +85,6 @@
             </li>
                       <li class="none">
                           <a href="license.html" title="Project License">Project License</a>
-            </li>
-                      <li class="none">
-                          <a href="modules.html" title="Project Modules">Project Modules</a>
             </li>
                       <li class="none">
                           <a href="team-list.html" title="Project Team">Project Team</a>
@@ -139,6 +124,12 @@
 <th>Type</th>
 <th>License</th></tr>
 <tr class="b">
+<td>com.amazonaws</td>
+<td><a class="externalLink" href="https://aws.amazon.com/sdkforjava">aws-java-sdk</a></td>
+<td>1.4.5</td>
+<td>jar</td>
+<td><a class="externalLink" href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a></td></tr>
+<tr class="a">
 <td>commons-logging</td>
 <td><a class="externalLink" href="http://commons.apache.org/logging">commons-logging</a></td>
 <td>1.1.1</td>
@@ -162,7 +153,47 @@
 <td><a class="externalLink" href="http://www.opensource.org/licenses/cpl1.0.txt">Common Public License Version 1.0</a></td></tr></table></div></div><a name="Project_Transitive_Dependencies"></a>
 <div class="section">
 <h2>Project Transitive Dependencies<a name="Project_Transitive_Dependencies"></a></h2>
-<p>The following is a list of transitive dependencies for this project. Transitive dependencies are the dependencies of the project dependencies.</p><a name="Project_Transitive_Dependencies_test"></a>
+<p>The following is a list of transitive dependencies for this project. Transitive dependencies are the dependencies of the project dependencies.</p><a name="Project_Transitive_Dependencies_compile"></a>
+<div class="section">
+<h3>compile<a name="compile"></a></h3>
+<p>The following is a list of compile dependencies for this project. These dependencies are required to compile and run the application:</p>
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>GroupId</th>
+<th>ArtifactId</th>
+<th>Version</th>
+<th>Type</th>
+<th>License</th></tr>
+<tr class="b">
+<td>commons-codec</td>
+<td><a class="externalLink" href="http://jakarta.apache.org/commons/codec/">commons-codec</a></td>
+<td>1.3</td>
+<td>jar</td>
+<td>/LICENSE.txt</td></tr>
+<tr class="a">
+<td>org.apache.httpcomponents</td>
+<td><a class="externalLink" href="http://hc.apache.org/httpcomponents-client">httpclient</a></td>
+<td>4.1</td>
+<td>jar</td>
+<td>LICENSE.txt</td></tr>
+<tr class="b">
+<td>org.apache.httpcomponents</td>
+<td><a class="externalLink" href="http://hc.apache.org/httpcomponents-core-ga/">httpcore</a></td>
+<td>4.1</td>
+<td>jar</td>
+<td>LICENSE.txt</td></tr>
+<tr class="a">
+<td>org.codehaus.jackson</td>
+<td><a class="externalLink" href="http://jackson.codehaus.org">jackson-core-asl</a></td>
+<td>1.8.9</td>
+<td>jar</td>
+<td><a class="externalLink" href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a></td></tr>
+<tr class="b">
+<td>org.codehaus.jackson</td>
+<td><a class="externalLink" href="http://jackson.codehaus.org">jackson-mapper-asl</a></td>
+<td>1.8.9</td>
+<td>jar</td>
+<td><a class="externalLink" href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a></td></tr></table></div><a name="Project_Transitive_Dependencies_test"></a>
 <div class="section">
 <h3>test<a name="test"></a></h3>
 <p>The following is a list of test dependencies for this project. These dependencies are only required to compile and run unit tests for the application:</p>
@@ -201,16 +232,76 @@
 <div class="section">
 <h3>Dependency Tree<a name="Dependency_Tree"></a></h3>
 <ul>
-<li>com.emc.vipr:dataservices:pom:1.0-SNAPSHOT <img id="_img1" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep0', '_img1' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep0" style="display:none">
+<li>com.emc.vipr:s3-client:jar:1.0-SNAPSHOT <img id="_img1" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep0', '_img1' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep0" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
-<th>ViPR Data Services SDK for Java</th></tr>
+<th>ViPR S3 Client for Java</th></tr>
 <tr class="b">
 <td>
-<p><b>Description: </b>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR data services.</p>
+<p><b>Description: </b>This project extends the Amazon S3 client to add ViPR extended functionality.</p>
 <p><b>Project License: </b><a class="externalLink" href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a></p></td></tr></table></div>
 <ul>
-<li>junit:junit:jar:4.11 (test) <img id="_img3" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep2', '_img3' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep2" style="display:none">
+<li>com.amazonaws:aws-java-sdk:jar:1.4.5 (compile) <img id="_img3" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep2', '_img3' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep2" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>AWS SDK for Java</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>The Amazon Web Services SDK for Java provides Java APIs for building software on AWS&#x2019; cost-effective, scalable, and reliable infrastructure products. The AWS Java SDK allows developers to code against APIs for all of Amazon's infrastructure web services (Amazon S3, Amazon EC2, Amazon SQS, Amazon Relational Database Service, Amazon AutoScaling, etc).</p>
+<p><b>URL: </b><a class="externalLink" href="https://aws.amazon.com/sdkforjava">https://aws.amazon.com/sdkforjava</a></p>
+<p><b>Project License: </b><a class="externalLink" href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a></p></td></tr></table></div>
+<ul>
+<li>org.apache.httpcomponents:httpclient:jar:4.1 (compile) <img id="_img5" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep4', '_img5' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep4" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>HttpClient</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>HttpComponents Client (base module)</p>
+<p><b>URL: </b><a class="externalLink" href="http://hc.apache.org/httpcomponents-client">http://hc.apache.org/httpcomponents-client</a></p>
+<p><b>Project License: </b><a href="LICENSE.txt">Apache License</a></p></td></tr></table></div>
+<ul>
+<li>org.apache.httpcomponents:httpcore:jar:4.1 (compile) <img id="_img7" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep6', '_img7' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep6" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>HttpCore</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>HttpComponents Core (blocking I/O)</p>
+<p><b>URL: </b><a class="externalLink" href="http://hc.apache.org/httpcomponents-core-ga/">http://hc.apache.org/httpcomponents-core-ga/</a></p>
+<p><b>Project License: </b><a href="LICENSE.txt">Apache License</a></p></td></tr></table></div></li></ul></li>
+<li>commons-codec:commons-codec:jar:1.3 (compile) <img id="_img9" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep8', '_img9' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep8" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>Codec</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>The codec package contains simple encoder and decoders for
+   various formats such as Base64 and Hexadecimal.  In addition to these
+   widely used encoders and decoders, the codec package also maintains a
+   collection of phonetic encoding utilities.</p>
+<p><b>URL: </b><a class="externalLink" href="http://jakarta.apache.org/commons/codec/">http://jakarta.apache.org/commons/codec/</a></p>
+<p><b>Project License: </b><a href="/LICENSE.txt">The Apache Software License, Version 2.0</a></p></td></tr></table></div></li>
+<li>org.codehaus.jackson:jackson-core-asl:jar:1.8.9 (compile) <img id="_img11" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep10', '_img11' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep10" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>Jackson</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>Jackson is a high-performance JSON processor (parser, generator)</p>
+<p><b>URL: </b><a class="externalLink" href="http://jackson.codehaus.org">http://jackson.codehaus.org</a></p>
+<p><b>Project License: </b><a class="externalLink" href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a></p></td></tr></table></div></li>
+<li>org.codehaus.jackson:jackson-mapper-asl:jar:1.8.9 (compile) <img id="_img13" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep12', '_img13' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep12" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>Data Mapper for Jackson</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>Data Mapper package is a high-performance data binding package
+built on Jackson JSON processor</p>
+<p><b>URL: </b><a class="externalLink" href="http://jackson.codehaus.org">http://jackson.codehaus.org</a></p>
+<p><b>Project License: </b><a class="externalLink" href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a></p></td></tr></table></div></li></ul></li>
+<li>junit:junit:jar:4.11 (test) <img id="_img15" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep14', '_img15' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep14" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>JUnit</th></tr>
@@ -221,7 +312,7 @@
 <p><b>URL: </b><a class="externalLink" href="http://junit.org">http://junit.org</a></p>
 <p><b>Project License: </b><a class="externalLink" href="http://www.opensource.org/licenses/cpl1.0.txt">Common Public License Version 1.0</a></p></td></tr></table></div>
 <ul>
-<li>org.hamcrest:hamcrest-core:jar:1.3 (test) <img id="_img5" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep4', '_img5' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep4" style="display:none">
+<li>org.hamcrest:hamcrest-core:jar:1.3 (test) <img id="_img17" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep16', '_img17' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep16" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>Hamcrest Core</th></tr>
@@ -230,7 +321,7 @@
 <p><b>Description: </b>This is the core API of hamcrest matcher framework to be used by third-party framework providers. This includes the a foundation set of matcher implementations for common operations.</p>
 <p><b>URL: </b><a class="externalLink" href="https://github.com/hamcrest/JavaHamcrest/hamcrest-core">https://github.com/hamcrest/JavaHamcrest/hamcrest-core</a></p>
 <p><b>Project License: </b><a class="externalLink" href="http://www.opensource.org/licenses/bsd-license.php">New BSD License</a></p></td></tr></table></div></li></ul></li>
-<li>commons-logging:commons-logging:jar:1.1.1 (compile) <img id="_img7" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep6', '_img7' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep6" style="display:none">
+<li>commons-logging:commons-logging:jar:1.1.1 (compile) <img id="_img19" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep18', '_img19' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep18" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>Commons Logging</th></tr>
@@ -243,8 +334,10 @@
 <div class="section">
 <h2>Licenses<a name="Licenses"></a></h2>
 <p><b>New BSD License: </b>Hamcrest Core</p>
+<p><b>Apache License: </b>HttpClient, HttpCore</p>
+<p><b>Apache License, Version 2.0: </b>AWS SDK for Java</p>
 <p><b>Common Public License Version 1.0: </b>JUnit</p>
-<p><b>The Apache Software License, Version 2.0: </b>Commons Logging, ViPR Data Services SDK for Java</p></div><a name="Dependency_File_Details"></a>
+<p><b>The Apache Software License, Version 2.0: </b>Codec, Commons Logging, Data Mapper for Jackson, Jackson, ViPR S3 Client for Java</p></div><a name="Dependency_File_Details"></a>
 <div class="section">
 <h2>Dependency File Details<a name="Dependency_File_Details"></a></h2>
 <table border="0" class="bodyTable">
@@ -256,6 +349,22 @@
 <th>Packages</th>
 <th>JDK Rev</th>
 <th>Debug</th></tr>
+<tr class="b">
+<td>aws-java-sdk-1.4.5.jar</td>
+<td>9.68 MB</td>
+<td>7,681</td>
+<td>7,522</td>
+<td>141</td>
+<td>1.6</td>
+<td>debug</td></tr>
+<tr class="a">
+<td>commons-codec-1.3.jar</td>
+<td>45.63 kB</td>
+<td>42</td>
+<td>25</td>
+<td>5</td>
+<td>1.2</td>
+<td>debug</td></tr>
 <tr class="b">
 <td>commons-logging-1.1.1.jar</td>
 <td>59.26 kB</td>
@@ -270,6 +379,38 @@
 <td>266</td>
 <td>233</td>
 <td>28</td>
+<td>1.5</td>
+<td>debug</td></tr>
+<tr class="b">
+<td>httpclient-4.1.jar</td>
+<td>341.76 kB</td>
+<td>308</td>
+<td>272</td>
+<td>22</td>
+<td>1.5</td>
+<td>debug</td></tr>
+<tr class="a">
+<td>httpcore-4.1.jar</td>
+<td>176.80 kB</td>
+<td>185</td>
+<td>163</td>
+<td>10</td>
+<td>1.3</td>
+<td>debug</td></tr>
+<tr class="b">
+<td>jackson-core-asl-1.8.9.jar</td>
+<td>222.18 kB</td>
+<td>145</td>
+<td>129</td>
+<td>8</td>
+<td>1.5</td>
+<td>debug</td></tr>
+<tr class="a">
+<td>jackson-mapper-asl-1.8.9.jar</td>
+<td>653.39 kB</td>
+<td>457</td>
+<td>432</td>
+<td>16</td>
 <td>1.5</td>
 <td>debug</td></tr>
 <tr class="b">
@@ -289,21 +430,21 @@
 <th>JDK Rev</th>
 <th>Debug</th></tr>
 <tr class="b">
-<td>3</td>
-<td>342.53 kB</td>
-<td>360</td>
-<td>306</td>
-<td>33</td>
-<td>1.5</td>
-<td>3</td></tr>
+<td>9</td>
+<td>11.42 MB</td>
+<td>9,178</td>
+<td>8,849</td>
+<td>235</td>
+<td>1.6</td>
+<td>9</td></tr>
 <tr class="a">
-<td>compile: 1</td>
-<td>compile: 59.26 kB</td>
-<td>compile: 42</td>
-<td>compile: 28</td>
-<td>compile: 2</td>
+<td>compile: 7</td>
+<td>compile: 11.14 MB</td>
+<td>compile: 8,860</td>
+<td>compile: 8,571</td>
+<td>compile: 204</td>
 <td>-</td>
-<td>compile: 1</td></tr>
+<td>compile: 7</td></tr>
 <tr class="b">
 <td>test: 2</td>
 <td>test: 283.26 kB</td>
@@ -337,6 +478,14 @@
 <th>apache.snapshots</th>
 <th>central</th></tr>
 <tr class="b">
+<td>com.amazonaws:aws-java-sdk:jar:1.4.5</td>
+<td>-</td>
+<td><a class="externalLink" href="http://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.4.5/aws-java-sdk-1.4.5.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
+<tr class="a">
+<td>commons-codec:commons-codec:jar:1.3</td>
+<td>-</td>
+<td><a class="externalLink" href="http://repo1.maven.org/maven2/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
+<tr class="b">
 <td>commons-logging:commons-logging:jar:1.1.1</td>
 <td>-</td>
 <td><a class="externalLink" href="http://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
@@ -344,6 +493,22 @@
 <td>junit:junit:jar:4.11</td>
 <td>-</td>
 <td><a class="externalLink" href="http://repo1.maven.org/maven2/junit/junit/4.11/junit-4.11.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
+<tr class="b">
+<td>org.apache.httpcomponents:httpclient:jar:4.1</td>
+<td>-</td>
+<td><a class="externalLink" href="http://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.1/httpclient-4.1.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
+<tr class="a">
+<td>org.apache.httpcomponents:httpcore:jar:4.1</td>
+<td>-</td>
+<td><a class="externalLink" href="http://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.1/httpcore-4.1.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
+<tr class="b">
+<td>org.codehaus.jackson:jackson-core-asl:jar:1.8.9</td>
+<td>-</td>
+<td><a class="externalLink" href="http://repo1.maven.org/maven2/org/codehaus/jackson/jackson-core-asl/1.8.9/jackson-core-asl-1.8.9.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
+<tr class="a">
+<td>org.codehaus.jackson:jackson-mapper-asl:jar:1.8.9</td>
+<td>-</td>
+<td><a class="externalLink" href="http://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.8.9/jackson-mapper-asl-1.8.9.jar"><img alt="Found at http://repo1.maven.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
 <tr class="b">
 <td>org.hamcrest:hamcrest-core:jar:1.3</td>
 <td>-</td>
@@ -353,9 +518,9 @@
 <th>apache.snapshots</th>
 <th>central</th></tr>
 <tr class="b">
-<td>3 (compile: 1, test: 2)</td>
+<td>9 (compile: 7, test: 2)</td>
 <td>0</td>
-<td>3</td></tr></table></div>
+<td>9</td></tr></table></div>
       </div>
     </div>
     <div class="clear">
