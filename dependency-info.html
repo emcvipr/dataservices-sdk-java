@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>ViPR Atmos Client for Java - Dependency Information</title>
+    <title>ViPR Data Services SDK for Java - Dependency Information</title>
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
@@ -17,7 +17,7 @@
   <body class="composite">
     <div id="banner">
                     <div id="bannerLeft">
-                ViPR Atmos Client for Java
+                ViPR Data Services SDK for Java
                 </div>
                     <div class="clear">
         <hr/>
@@ -28,9 +28,9 @@
                     
                 <div class="xleft">
         <span id="publishDate">Last Published: 2013-09-27</span>
-                  &nbsp;| <span id="projectVersion">Version: 2.1.4.0-SNAPSHOT</span>
+                  &nbsp;| <span id="projectVersion">Version: 1.0-SNAPSHOT</span>
                       </div>
-            <div class="xright">                    <a href="${project.url}" title="ViPR Atmos Client for Java">ViPR Atmos Client for Java</a>
+            <div class="xright">                    <a href="./" title="ViPR Data Services SDK for Java">ViPR Data Services SDK for Java</a>
               
                     
       </div>
@@ -42,15 +42,21 @@
       <div id="navcolumn">
              
                     
-                                <h5>Parent Project</h5>
+                                          <h5>Modules</h5>
                   <ul>
                   <li class="none">
-                          <a href="../index.html" title="ViPR Data Services SDK for Java">ViPR Data Services SDK for Java</a>
+                          <a href="s3-client/index.html" title="ViPR S3 Client for Java">ViPR S3 Client for Java</a>
+            </li>
+                  <li class="none">
+                          <a href="jersey-apache-httpclient4/index.html" title="Custom jersey-apache-httpclient4">Custom jersey-apache-httpclient4</a>
+            </li>
+                  <li class="none">
+                          <a href="atmos-client/index.html" title="ViPR Atmos Client for Java">ViPR Atmos Client for Java</a>
             </li>
           </ul>
                        <h5>Project Documentation</h5>
                   <ul>
-                                                                                                                                                                                                                                                                                                                        <li class="expanded">
+                                                                                                                                                                                                                                                                                                                                          <li class="expanded">
                           <a href="project-info.html" title="Project Information">Project Information</a>
                     <ul>
                       <li class="none">
@@ -87,6 +93,9 @@
                           <a href="license.html" title="Project License">Project License</a>
             </li>
                       <li class="none">
+                          <a href="modules.html" title="Project Modules">Project Modules</a>
+            </li>
+                      <li class="none">
                           <a href="team-list.html" title="Project Team">Project Team</a>
             </li>
                       <li class="none">
@@ -117,37 +126,38 @@
 <div class="source">
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;com.emc.vipr&lt;/groupId&gt;
-  &lt;artifactId&gt;atmos-client&lt;/artifactId&gt;
-  &lt;version&gt;2.1.4.0-SNAPSHOT&lt;/version&gt;
+  &lt;artifactId&gt;dataservices&lt;/artifactId&gt;
+  &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+  &lt;type&gt;pom&lt;/type&gt;
 &lt;/dependency&gt;</pre></div></div>
 <div class="section">
 <h3>Apache Buildr<a name="Apache_Buildr"></a></h3><a name="Apache_Buildr"></a>
 <div class="source">
-<pre>'com.emc.vipr:atmos-client:jar:2.1.4.0-SNAPSHOT'</pre></div></div>
+<pre>'com.emc.vipr:dataservices:pom:1.0-SNAPSHOT'</pre></div></div>
 <div class="section">
 <h3>Apache Ant<a name="Apache_Ant"></a></h3><a name="Apache_Ant"></a>
 <div class="source">
-<pre>&lt;dependency org=&quot;com.emc.vipr&quot; name=&quot;atmos-client&quot; rev=&quot;2.1.4.0-SNAPSHOT&quot;&gt;
-  &lt;artifact name=&quot;atmos-client&quot; type=&quot;jar&quot; /&gt;
+<pre>&lt;dependency org=&quot;com.emc.vipr&quot; name=&quot;dataservices&quot; rev=&quot;1.0-SNAPSHOT&quot;&gt;
+  &lt;artifact name=&quot;dataservices&quot; type=&quot;pom&quot; /&gt;
 &lt;/dependency&gt;</pre></div></div>
 <div class="section">
 <h3>Groovy Grape<a name="Groovy_Grape"></a></h3><a name="Groovy_Grape"></a>
 <div class="source">
 <pre>@Grapes(
-@Grab(group='com.emc.vipr', module='atmos-client', version='2.1.4.0-SNAPSHOT')
+@Grab(group='com.emc.vipr', module='dataservices', version='1.0-SNAPSHOT')
 )</pre></div></div>
 <div class="section">
 <h3>Grails<a name="Grails"></a></h3><a name="Grails"></a>
 <div class="source">
-<pre>compile 'com.emc.vipr:atmos-client:2.1.4.0-SNAPSHOT'</pre></div></div>
+<pre>compile 'com.emc.vipr:dataservices:1.0-SNAPSHOT'</pre></div></div>
 <div class="section">
 <h3>Leiningen<a name="Leiningen"></a></h3><a name="Leiningen"></a>
 <div class="source">
-<pre>[com.emc.vipr/atmos-client &quot;2.1.4.0-SNAPSHOT&quot;]</pre></div></div>
+<pre>[com.emc.vipr/dataservices &quot;1.0-SNAPSHOT&quot;]</pre></div></div>
 <div class="section">
 <h3>SBT<a name="SBT"></a></h3><a name="SBT"></a>
 <div class="source">
-<pre>libraryDependencies += &quot;com.emc.vipr&quot; %% &quot;atmos-client&quot; % &quot;2.1.4.0-SNAPSHOT&quot;</pre></div></div></div>
+<pre>libraryDependencies += &quot;com.emc.vipr&quot; %% &quot;dataservices&quot; % &quot;1.0-SNAPSHOT&quot;</pre></div></div></div>
       </div>
     </div>
     <div class="clear">
