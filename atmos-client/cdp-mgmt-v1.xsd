@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema elementFormDefault="qualified"
+           version="1.0"
+           targetNamespace="http://cdp.emc.com/services/rest/model"
+           xmlns:tns="http://cdp.emc.com/services/rest/model"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+           jaxb:extensionBindingPrefixes="xjc"
+           jaxb:version="1.0">
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:globalBindings>
+                <xjc:simple/>
+            </jaxb:globalBindings>
+        </xs:appinfo>
+    </xs:annotation>
+    <xs:element name="account" type="tns:Account"/>
+    <xs:element name="accountList" type="tns:AccountList"/>
+    <xs:element name="accountRole" type="tns:AccountRole"/>
+    <xs:element name="accountRoleList" type="tns:AccountRoleList"/>
+    <xs:element name="agreement" type="tns:Agreement"/>
+    <xs:element name="application" type="tns:Application"/>
+    <xs:element name="applicationList" type="tns:ApplicationList"/>
+    <xs:element name="assignee" type="tns:Assignee"/>
+    <xs:element name="assigneeList" type="tns:AssigneeList"/>
+    <xs:element name="error" type="tns:Error"/>
+    <xs:element name="identity" type="tns:Identity"/>
+    <xs:element name="identityList" type="tns:IdentityList"/>
+    <xs:element name="invitation" type="tns:Invitation"/>
+    <xs:element name="invitationList" type="tns:InvitationList"/>
+    <xs:element name="lifecycleEvent" type="tns:LifecycleEvent"/>
+    <xs:element name="profile" type="tns:Profile"/>
+    <xs:element name="subscription" type="tns:Subscription"/>
+    <xs:element name="subscriptionList" type="tns:SubscriptionList"/>
+    <xs:element name="subtenant" type="tns:Subtenant"/>
+    <xs:element name="subtenantList" type="tns:SubtenantList"/>
+    <xs:element name="supportIssue" type="tns:SupportIssue"/>
+    <xs:element name="token" type="tns:Token"/>
+    <xs:element name="tokenGroup" type="tns:TokenGroup"/>
+    <xs:element name="tokenGroupList" type="tns:TokenGroupList"/>
+    <xs:element name="tokenGroupRole" type="tns:TokenGroupRole"/>
+    <xs:element name="tokenGroupRoleList" type="tns:TokenGroupRoleList"/>
+    <xs:element name="tokenList" type="tns:TokenList"/>
+    <xs:complexType name="Attribute">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string"/>
+            <xs:element name="Value" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Account">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string" minOccurs="0"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="type" type="xs:string" minOccurs="0"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="state" type="tns:accountState" minOccurs="0"/>
+            <xs:element name="attribute" type="tns:Attribute" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="subscription" type="tns:Subscription" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AccountList">
+        <xs:sequence>
+            <xs:element name="account" type="tns:Account" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AccountRole">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AccountRoleList">
+        <xs:sequence>
+            <xs:element name="accountRole" type="tns:AccountRole" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Agreement">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string" minOccurs="0"/>
+            <xs:element name="serviceId" type="xs:string"/>
+            <xs:element name="url" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Application">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string" minOccurs="0"/>
+            <xs:element name="serviceId" type="xs:string"/>
+            <xs:element name="requestorId" type="xs:string" minOccurs="0"/>
+            <xs:element name="state" type="xs:string" minOccurs="0"/>
+            <xs:element name="applyTime" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="handleTime" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="notes" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ApplicationList">
+        <xs:sequence>
+            <xs:element name="application" type="tns:Application" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Assignee">
+        <xs:sequence>
+            <xs:element name="identityId" type="xs:string"/>
+            <xs:element name="roleId" type="xs:string"/>
+            <xs:element ref="tns:profile" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AssigneeList">
+        <xs:sequence>
+            <xs:element name="assignee" type="tns:Assignee" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Error">
+        <xs:sequence>
+            <xs:element name="code" type="xs:string" minOccurs="0"/>
+            <xs:element name="message" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Identity">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string" minOccurs="0"/>
+            <xs:element name="password" type="xs:string" minOccurs="0"/>
+            <xs:element ref="tns:profile" minOccurs="0"/>
+            <xs:element name="role" type="xs:string" minOccurs="0"/>
+            <xs:element name="state" type="xs:string" minOccurs="0"/>
+            <xs:element name="signUpTime" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="IdentityList">
+        <xs:sequence>
+            <xs:element name="identity" type="tns:Identity" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Invitation">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="accountId" type="xs:string"/>
+            <xs:element name="targetAccountRole" type="xs:string"/>
+            <xs:element name="inviteeId" type="xs:string"/>
+            <xs:element name="inviterId" type="xs:string"/>
+            <xs:element name="state" type="xs:string"/>
+            <xs:element name="inviteTime" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="handleTime" type="xs:dateTime" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="InvitationList">
+        <xs:sequence>
+            <xs:element name="invitation" type="tns:Invitation" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="LifecycleEvent">
+        <xs:sequence>
+            <xs:element name="targetId" type="xs:string"/>
+            <xs:element name="targetType" type="tns:lifecycleTargetType"/>
+            <xs:element name="eventType" type="tns:lifecycleEventType"/>
+            <xs:element name="eventDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="count" type="xs:int" minOccurs="0"/>
+            <xs:element name="initiatedBy" type="xs:string" minOccurs="0"/>
+            <xs:element name="processedBy" type="xs:string" minOccurs="0"/>
+            <xs:element name="notes" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Profile">
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:string" minOccurs="0"/>
+            <xs:element name="lastName" type="xs:string" minOccurs="0"/>
+            <xs:element name="address1" type="xs:string" minOccurs="0"/>
+            <xs:element name="address2" type="xs:string" minOccurs="0"/>
+            <xs:element name="city" type="xs:string" minOccurs="0"/>
+            <xs:element name="county" type="xs:string" minOccurs="0"/>
+            <xs:element name="stateCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="countryCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="postalCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+            <xs:element name="fax" type="xs:string" minOccurs="0"/>
+            <xs:element name="pager" type="xs:string" minOccurs="0"/>
+            <xs:element name="im" type="xs:string" minOccurs="0"/>
+            <xs:element name="workPhone" type="xs:string" minOccurs="0"/>
+            <xs:element name="homePhone" type="xs:string" minOccurs="0"/>
+            <xs:element name="mobilePhone" type="xs:string" minOccurs="0"/>
+            <xs:element name="companyName" type="xs:string" minOccurs="0"/>
+            <xs:element name="companyURL" type="xs:string" minOccurs="0"/>
+            <xs:element name="companySize" type="xs:string" minOccurs="0"/>
+            <xs:element name="industryCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="attribute" type="tns:Attribute" minOccurs="0"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Subscription">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string" minOccurs="0"/>
+            <xs:element name="serviceId" type="xs:string" minOccurs="0"/>
+            <xs:element name="effectiveDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="state" type="tns:subscriptionState" minOccurs="0"/>
+            <xs:element name="agreementUrl" type="xs:string" minOccurs="0"/>
+            <xs:element name="attribute" type="tns:Attribute" minOccurs="0"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SubscriptionList">
+        <xs:sequence>
+            <xs:element name="subscription" type="tns:Subscription" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Subtenant">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="name" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SubtenantList">
+        <xs:sequence>
+            <xs:element name="subtenant" type="tns:Subtenant" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SupportIssue">
+        <xs:sequence>
+            <xs:element name="type" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Token">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="tokenGroupId" type="xs:string"/>
+            <xs:element name="subscriptionId" type="xs:string"/>
+            <xs:element name="subtenantId" type="xs:string" minOccurs="0"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="enabled" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="sharedSecret" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TokenGroup">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TokenGroupList">
+        <xs:sequence>
+            <xs:element name="tokenGroup" type="tns:TokenGroup" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TokenGroupRole">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TokenGroupRoleList">
+        <xs:sequence>
+            <xs:element name="tokenGroupRole" type="tns:TokenGroupRole" nillable="true" minOccurs="0"
+                        maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TokenList">
+        <xs:sequence>
+            <xs:element name="token" type="tns:Token" nillable="true" minOccurs="0"
+                        maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="accountState">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="active"/>
+            <xs:enumeration value="pending_cancellation"/>
+            <xs:enumeration value="suspended"/>
+            <xs:enumeration value="cancelled"/>
+            <xs:enumeration value="closed"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="lifecycleEventType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="user_cancel"/>
+            <xs:enumeration value="user_restore"/>
+            <xs:enumeration value="admin_suspend"/>
+            <xs:enumeration value="admin_cancel"/>
+            <xs:enumeration value="admin_close"/>
+            <xs:enumeration value="admin_restore"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="lifecycleTargetType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="account"/>
+            <xs:enumeration value="subscription"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="subscriptionState">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="unprovisioned"/>
+            <xs:enumeration value="active"/>
+            <xs:enumeration value="pending_cancellation"/>
+            <xs:enumeration value="suspended"/>
+            <xs:enumeration value="cancelled"/>
+            <xs:enumeration value="closed"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:element name="meteringUsageList" type="tns:MeteringUsageList"/>
+    <xs:element name="ResourceTagList" type="tns:ResourceTagList"/>
+    <xs:complexType name="MeteringUsageList">
+        <xs:sequence>
+            <xs:element name="meteringUsage" type="tns:MeteringUsage" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MeteringUsage">
+        <xs:sequence>
+            <xs:element name="subscriptionId" type="xs:string"/>
+            <xs:element name="tokenGroupId" type="xs:string" minOccurs="0"/>
+            <xs:element name="tokenId" type="xs:string" minOccurs="0"/>
+            <xs:element name="startTime" type="xs:dateTime"/>
+            <xs:element name="endTime" type="xs:dateTime"/>
+            <xs:element name="usage" type="tns:Usage" minOccurs="0"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Usage">
+        <xs:sequence>
+            <xs:element name="resource" type="xs:string"/>
+            <xs:element name="resourceTag" type="xs:string" minOccurs="0"/>
+            <xs:element name="quantum" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceTag">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="type" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceTagList">
+        <xs:sequence>
+            <xs:element name="Resource" type="tns:ResourceTag" nillable="true"
+                        minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="startIndex" type="xs:int"/>
+            <xs:element name="pageSize" type="xs:int"/>
+            <xs:element name="totalResults" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

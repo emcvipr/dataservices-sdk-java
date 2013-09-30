@@ -1,0 +1,101 @@
+<project name="EMC Atmos Java API" default="dist">
+    <!-- Build directory locations -->
+    <property name="src" value="src"/>
+    <property name="dist" value="dist"/>
+    <property name="classes" value="classes"/>
+    <property name="build" value="build"/>
+    <property name="doc" value="doc/javadoc"/>
+    <property name="lib" value="lib"/>
+    <property name="samples" value="samples"/>
+    <property name="version" value="2.1.3"/>
+
+    <!-- Name of the JAR file -->
+    <property name="jarfile" value="atmos-api-${version}.jar"/>
+
+    <!-- Classpath to compile with -->
+    <path id="classpath">
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="commons-httpclient">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- Builds the distribution zip file -->
+    <target name="dist" depends="jar,doc">
+        <zip destfile="${dist}/atmos-java-${version}.zip">
+            <fileset dir=".">
+                <include name="${src}/**"/>
+                <include name="${build}/**"/>
+                <include name="${doc}/**"/>
+                <include name="${lib}/**"/>
+                <include name="commons-httpclient/**"/>
+                <include name="build.xml"/>
+                <include name="readme.txt"/>
+
+                <!-- Exclude all subversion dirs -->
+                <exclude name="**/.svn/**"/>
+            </fileset>
+        </zip>
+    </target>
+
+    <!-- Builds the ESU API jar file -->
+    <target name="jar" depends="compile">
+        <jar destfile="${build}/${jarfile}" manifest="src/MANIFEST.MF">
+            <manifest>
+                <section name="com.emc.atmos">
+                    <attribute name="Implementation-Version" value="${version}"/>
+                </section>
+            </manifest>
+            <fileset dir="${classes}">
+            </fileset>
+        </jar>
+    </target>
+
+    <!-- Compiles the java files -->
+    <target name="compile" depends="prepare,build-jersey-contrib">
+        <javac source="1.6" destdir="${classes}" srcdir="${src}" target="1.6"
+               debug="true" classpathref="classpath">
+        </javac>
+    </target>
+
+    <!-- Builds the javadoc from the source code -->
+    <target name="doc" depends="prepare">
+        <javadoc source="1.6" destdir="${doc}" classpathref="classpath">
+            <header>EMC Atmos API for Java</header>
+            <bottom>Copyright (c) 2008-2013 EMC</bottom>
+            <fileset dir="${src}">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+
+    <!-- Removes the build directories -->
+    <target name="clean">
+        <delete dir="${dist}"/>
+        <delete dir="${classes}"/>
+        <delete dir="${build}"/>
+        <delete dir="${doc}"/>
+    </target>
+
+    <!-- Creates the build directories -->
+    <target name="prepare">
+        <mkdir dir="${dist}"/>
+        <mkdir dir="${classes}"/>
+        <mkdir dir="${build}"/>
+        <mkdir dir="${doc}"/>
+    </target>
+
+    <target name="build-jersey-contrib">
+        <mkdir dir="ext-build"/>
+        <javac source="1.6" destdir="ext-build" srcdir="ext-src" target="1.6" classpathref="classpath" debug="true">
+        </javac>
+        <jar destfile="lib/jersey-apache-client4-1.16-modified.jar">
+            <fileset dir="ext-build">
+            </fileset>
+        </jar>
+        <delete dir="ext-build"/>
+    </target>
+
+</project>

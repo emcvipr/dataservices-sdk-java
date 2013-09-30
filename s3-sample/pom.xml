@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.emc.vipr</groupId>
-    <artifactId>vipr-data-services-sdk</artifactId>
-    <version>0.1.0</version>
+    <artifactId>dataservices</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>vipr-data-services-s3-sample</artifactId>
+  <artifactId>s3-sample</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
     <dependency>
       <groupId>com.emc.vipr</groupId>
-      <artifactId>vipr-data-services-s3-client</artifactId>
+      <artifactId>s3-client</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
@@ -30,12 +30,83 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <configuration>
+              <mainClass>com.emc.vipr.sample.AtomicAppend</mainClass>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>bucketfileaccess</id>
+      <activation>
+        <property>
+          <name>bucketfileaccess</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
             <configuration>
               <executable>java</executable>
               <arguments>
                 <argument>-classpath</argument>
-                <classpath />
-                <argument>com.emc.vipr.sample.AtomicAppend</argument>
+                <classpath/>
+                <argument>com.emc.vipr.sample.BucketFileAccess</argument>
+              </arguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>namespace</id>
+      <activation>
+        <property>
+          <name>namespace</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <configuration>
+              <executable>java</executable>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath/>
+                <argument>com.emc.vipr.sample.Namespace</argument>
+              </arguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>updateobject</id>
+      <activation>
+        <property>
+          <name>updateobject</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <configuration>
+              <executable>java</executable>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath/>
+                <argument>com.emc.vipr.sample.UpdateObject</argument>
               </arguments>
             </configuration>
           </plugin>
@@ -43,4 +114,6 @@
       </build>
     </profile>
   </profiles>
+  <name>ViPR S3 Client Samples</name>
+  <description>Sample applications that use the ViPR S3 extensions library.</description>
 </project>

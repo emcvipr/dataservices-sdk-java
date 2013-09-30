@@ -1,0 +1,6 @@
+acdp.mgmt.endpoint=https://10.242.25.73
+acdp.mgmt.username=sysadmin
+acdp.mgmt.password=#1Passwd
+acdp.admin.endpoint=http://10.242.25.71:8080
+acdp.admin.username=sysadmin
+acdp.admin.password=#1Passwd

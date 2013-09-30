@@ -1,5 +1,16 @@
-/**
- * TODO: Copyright here
+/*
+ * Copyright 2013 EMC Corporation. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 package com.emc.vipr.services.s3;
 
@@ -41,8 +52,7 @@ public interface ViPRS3 {
      *             request.
      */
     public UpdateObjectResult updateObject(String bucketName, String key,
-            File file, long startOffset) throws AmazonClientException,
-            AmazonServiceException;
+            File file, long startOffset) throws AmazonClientException;
 
     /**
      * Updates an existing object. The given stream will be overlaid on the
@@ -74,7 +84,7 @@ public interface ViPRS3 {
      */
     public UpdateObjectResult updateObject(String bucketName, String key,
             InputStream input, ObjectMetadata metadata, long startOffset)
-            throws AmazonClientException, AmazonServiceException;
+            throws AmazonClientException;
 
     /**
      * Updates an existing object. The given data will be overlaid on the
@@ -92,7 +102,7 @@ public interface ViPRS3 {
      *             request.
      */
     public UpdateObjectResult updateObject(UpdateObjectRequest request)
-            throws AmazonClientException, AmazonServiceException;
+            throws AmazonClientException;
 
     /**
      * Appends to an existing object. The given file will be appended to the end
@@ -120,7 +130,7 @@ public interface ViPRS3 {
      *             request.
      */
     public AppendObjectResult appendObject(String bucketName, String key,
-            File file) throws AmazonClientException, AmazonServiceException;
+            File file) throws AmazonClientException;
 
     /**
      * Appends to an existing object. The given stream will be appended to the
@@ -155,7 +165,7 @@ public interface ViPRS3 {
      */
     public AppendObjectResult appendObject(String bucketName, String key,
             InputStream input, ObjectMetadata metadata)
-            throws AmazonClientException, AmazonServiceException;
+            throws AmazonClientException;
 
     /**
      * Appends to an existing object. The given data will be appended to the end
@@ -178,7 +188,7 @@ public interface ViPRS3 {
      *             request.
      */
     public AppendObjectResult appendObject(AppendObjectRequest request)
-            throws AmazonClientException, AmazonServiceException;
+            throws AmazonClientException;
 
     /**
      * Initiates a set file access mode request on a bucket.
@@ -186,8 +196,8 @@ public interface ViPRS3 {
      * @param request
      *            The configured {@link SetBucketFileAccessModeRequest} request
      *            to execute.
-     * @return A {@link SetBucketFileAccessModeResult} containing the results of
-     *         the access mode change.
+     * @return A {@link com.emc.vipr.services.s3.model.BucketFileAccessModeResult}
+     *         containing the results of the access mode change.
      * @throws AmazonClientException
      *             If any errors are encountered in the client while making the
      *             request or handling the response.
@@ -196,16 +206,16 @@ public interface ViPRS3 {
      *             request. Generally, this will happen if the given transition
      *             is not valid.
      */
-    public SetBucketFileAccessModeResult setBucketFileAccessMode(
+    public BucketFileAccessModeResult setBucketFileAccessMode(
             SetBucketFileAccessModeRequest request)
-            throws AmazonClientException, AmazonServiceException;
+            throws AmazonClientException;
 
     /**
      * Checks the current file access mode on a bucket.
      * 
      * @param bucketName
      *            the name of the bucket to check.
-     * @return a {@link GetBucketFileAccessModeResult} object containing the
+     * @return a {@link BucketFileAccessModeResult} object containing the
      *         current file access mode for the bucket.
      * @throws AmazonClientException
      *             If any errors are encountered in the client while making the
@@ -214,9 +224,8 @@ public interface ViPRS3 {
      *             If any errors occurred in on the server while processing the
      *             request.
      */
-    public GetBucketFileAccessModeResult getBucketFileAccessMode(
-            String bucketName) throws AmazonClientException,
-            AmazonServiceException;
+    public BucketFileAccessModeResult getBucketFileAccessMode(
+            String bucketName) throws AmazonClientException;
 
     /**
      * Gets file access information for the keys in a bucket. This includes the

@@ -1,6 +1,21 @@
+/*
+ * Copyright 2013 EMC Corporation. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
 package com.emc.vipr.services.s3;
 
 import com.amazonaws.util.StringInputStream;
+import com.emc.vipr.services.s3.model.FileAccessObject;
 import com.emc.vipr.services.s3.model.GetFileAccessResult;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +51,7 @@ public class ViPRResponsesSaxParserTest {
         Assert.assertEquals("wrong object number", 2, result.getObjects().size());
         Assert.assertEquals("wrong mount point value", "no_idea_what_goes_here", result.getMountPoints().get(0));
         Assert.assertEquals("wrong mount point value", "no_idea_what_goes_here", result.getMountPoints().get(1));
-        com.emc.vipr.services.s3.model.Object object = result.getObjects().get(0);
+        FileAccessObject object = result.getObjects().get(0);
         Assert.assertEquals("wrong object name", "foo", object.getName());
         Assert.assertEquals("wrong object export", "cifs://foo.foo/foo", object.getDeviceExport());
         Assert.assertEquals("wrong object relative path", "foo", object.getRelativePath());

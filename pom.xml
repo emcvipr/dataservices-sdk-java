@@ -1,21 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-                             http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
   <groupId>com.emc.vipr</groupId>
-  <artifactId>vipr-data-services-sdk</artifactId>
-  <version>0.1.0</version>
+  <artifactId>dataservices</artifactId>
+  <version>1.0</version>
   <packaging>pom</packaging>
-  <name>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR data services.</name>
+  <name>ViPR Data Services SDK for Java</name>
+  <description>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR
+    data services.
+  </description>
+  <url>http://emcvipr.github.io/dataservices-sdk-java/</url>
 
   <modules>
     <module>s3-client</module>
-    <module>s3-sample</module>
+    <module>jersey-apache-httpclient4</module>
+    <module>atmos-client</module>
   </modules>
+
+  <distributionManagement>
+    <site>
+      <id>maven-site</id>
+      <url>http://emcvipr.github.io/dataservices-sdk-java/</url>
+    </site>
+  </distributionManagement>
 
   <scm>
     <url>https://github.com/emcvipr/dataservices-sdk-java</url>
+    <connection>scm:git:ssh://git@github.com/emcvipr/dataservices-sdk-java.git</connection>
+    <developerConnection>scm:git:ssh://git@lcige250.lss.emc.com/vipr-data-services-sdk-java.git</developerConnection>
+    <tag>release</tag>
   </scm>
 
   <licenses>
@@ -29,37 +47,20 @@
   <developers>
     <developer>
       <id>emc</id>
-      <organization>EMC</organization>
-      <organizationUrl>http://www.emc.com</organizationUrl>
+      <organization>EMC - ViPR Data Services</organization>
+      <organizationUrl>https://community.emc.com/community/edn/vipr-data-services</organizationUrl>
       <roles>
         <role>developer</role>
       </roles>
     </developer>
   </developers>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
-            <encoding>UTF-8</encoding>
-          </configuration>
-        </plugin>
-
-      </plugins>
-    </pluginManagement>
-  </build>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
@@ -67,4 +68,76 @@
       <version>1.1.1</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.0</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.4</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addClasspath>true</addClasspath>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.1</version>
+          <configuration>
+            <preparationGoals>clean install</preparationGoals>
+            <arguments>-Psonatype-oss-release -DskipTests</arguments>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.3</version>
+          <configuration>
+            <skipDeploy>true</skipDeploy>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-scm-publish-plugin</artifactId>
+          <version>1.0-beta-2</version>
+          <extensions>true</extensions>
+          <configuration>
+            <checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
+            <checkinComment>Publishing Site Docs for ${project.artifactId}:${project.version}</checkinComment>
+            <!-- svn location for publication -->
+            <pubScmUrl>scm:git:ssh://git@github.com/emcvipr/dataservices-sdk-java.git</pubScmUrl>
+            <scmBranch>gh-pages</scmBranch>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <links>
+            <link>http://java.sun.com/j2se/1.6.0/docs/api</link>
+          </links>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>

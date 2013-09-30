@@ -1,7 +1,22 @@
+/*
+ * Copyright 2013 EMC Corporation. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
 package com.emc.vipr.services.s3;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.model.transform.XmlResponsesSaxParser;
+import com.emc.vipr.services.s3.model.FileAccessObject;
 import com.emc.vipr.services.s3.model.GetFileAccessResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,28 +54,29 @@ public class ViPRResponsesSaxParser extends XmlResponsesSaxParser {
     /*
         <?xml version="1.0" encoding="UTF-8"?>
         <fileaccess_response>
-            <mountPoints>no_idea_what_goes_here</mountPoints>
-            <mountPoints>no_idea_what_goes_here</mountPoints>
+            <mountPoints>cifs://foo.foo/export</mountPoints>
+            <mountPoints>nfs://blah.blah:/export</mountPoints>
             <objects>
                <name>foo</name>
-               <deviceExport>cifs://foo.foo/foo</deviceExport>
+               <deviceExport>cifs://foo.foo/export</deviceExport>
                <relativePath>foo</relativePath>
                <owner>some_guy</owner>
             </objects>
             <objects>
                <name>blah</name>
-               <deviceExport>nfs://blahblah:/blah</deviceExport>
+               <deviceExport>nfs://blah.blah:/export</deviceExport>
                <relativePath>blah</relativePath>
                <owner>some_girl</owner>
             </objects>
+            <hasMore>false</hasMore>
         </fileaccess_response>
      */
     public class FileAccessResultHandler extends DefaultHandler {
         private GetFileAccessResult result = new GetFileAccessResult();
         private StringBuilder text;
         private List<String> mountPoints = new ArrayList<String>();
-        private List<com.emc.vipr.services.s3.model.Object> objects = new ArrayList<com.emc.vipr.services.s3.model.Object>();
-        private com.emc.vipr.services.s3.model.Object object, lastObject;
+        private List<FileAccessObject> objects = new ArrayList<FileAccessObject>();
+        private FileAccessObject object, lastObject;
 
         public GetFileAccessResult getResult() {
             return result;
@@ -88,7 +104,7 @@ public class ViPRResponsesSaxParser extends XmlResponsesSaxParser {
             } else if (name.equals("owner")) {
                 text.setLength(0);
             } else if (name.equals("objects")) {
-                object = new com.emc.vipr.services.s3.model.Object();
+                object = new FileAccessObject();
             } else {
                 log.warn("Ignoring unexpected tag <" + name + ">");
             }
