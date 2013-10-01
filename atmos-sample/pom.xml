@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.emc.vipr</groupId>
+    <artifactId>dataservices</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>atmos-sample</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+  	<module>atmos-sync</module>
+  	<module>acdp-provisioning-tool</module>
+  	<module>acdp-report-generator</module>
+  	<module>atmos-cleanup</module>
+  	<module>atmos-threaded-download</module>
+  	<module>directory-monitor</module>
+  	<module>orphaned-user-tool</module>
+  </modules>
+  <version>2.1.4.0-SNAPSHOT</version>
+
+  <name>Sample applications and tools using atmos-client</name>
+</project>

@@ -1,0 +1,105 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.emc.vipr</groupId>
+    <artifactId>dataservices</artifactId>
+    <version>1.0</version>
+  </parent>
+  <artifactId>atmos-client</artifactId>
+  <version>2.1.4</version>
+  <packaging>jar</packaging>
+  <name>ViPR Atmos Client for Java</name>
+  <description>This project implements the EMC Atmos Client</description>
+
+  <repositories>
+    <!-- This creates a local repository to include JARs that are not normally
+         in Maven anywhere. -->
+    <repository>
+      <id>repo</id>
+      <url>file://${project.basedir}/localjars</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging-api</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.16</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-core</artifactId>
+      <version>1.16</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>1.16</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-multipart</artifactId>
+      <version>1.16</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jdom</groupId>
+      <artifactId>jdom-legacy</artifactId>
+      <version>1.1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.emc.cdp</groupId>
+      <artifactId>rest_model</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.concord</groupId>
+      <artifactId>security</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.emc.vipr</groupId>
+      <artifactId>jersey-apache-httpclient4</artifactId>
+      <version>1.16-CUSTOM</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <!-- it is currently difficult to procure lab resources for an ACDP test cluster, so these tests will be
+                 run manually as needed -->
+            <exclude>com/emc/acdp/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,3 +1,17 @@
+/*
+ * Copyright 2013 EMC Corporation. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
 package com.emc.vipr.services.s3;
 
 import java.io.File;
@@ -41,9 +55,9 @@ import com.amazonaws.services.s3.model.EncryptionMaterials;
 public class S3ClientFactory {
     public static final String VIPR_PROPERTIES_FILE = "vipr.properties";
     
-    public static final String PROP_ACCESS_KEY_ID = "vipr.access_key_id";
-    public static final String PROP_SECRET_KEY = "vipr.secret_key";
-    public static final String PROP_ENDPOINT = "vipr.endpoint";
+    public static final String PROP_ACCESS_KEY_ID = "vipr.s3.access_key_id";
+    public static final String PROP_SECRET_KEY = "vipr.s3.secret_key";
+    public static final String PROP_ENDPOINT = "vipr.s3.endpoint";
     public static final String PROP_NAMESPACE = "vipr.namespace";
     public static final String PROP_PUBLIC_KEY = "vipr.encryption.publickey";
     public static final String PROP_PRIVATE_KEY = "vipr.encryption.privatekey";
@@ -77,8 +91,12 @@ public class S3ClientFactory {
         
         return props;
     }
-    
+
     public static ViPRS3Client getS3Client() {
+        return getS3Client(false);
+    }
+
+    public static ViPRS3Client getS3Client(boolean setNamespace) {
         try {
             Properties props = getProperties();
             
@@ -87,11 +105,10 @@ public class S3ClientFactory {
             String endpoint = getPropertyNotEmpty(props, PROP_ENDPOINT);
             
             BasicAWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
-            ViPRS3Client client = new ViPRS3Client(creds);
-            client.setEndpoint(endpoint);
-                        
+            ViPRS3Client client = new ViPRS3Client(endpoint, creds);
+
             String namespace = props.getProperty(PROP_NAMESPACE);
-            if(namespace != null) {
+            if(namespace != null && setNamespace) {
                client.setNamespace(namespace);
             }
             checkProxyConfig(client, props);
@@ -138,12 +155,6 @@ public class S3ClientFactory {
         BasicAWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
         AmazonS3EncryptionClient client = new AmazonS3EncryptionClient(creds, keys);
         client.setEndpoint(endpoint);
-        
-        String namespace = props.getProperty(PROP_NAMESPACE);
-        if(namespace != null) {
-           NamespaceRequestHandler handler = new NamespaceRequestHandler(namespace);
-           client.addRequestHandler(handler);
-        }
         
         checkProxyConfig(client, props);
         
