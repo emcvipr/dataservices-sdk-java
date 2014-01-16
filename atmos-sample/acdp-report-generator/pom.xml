@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.emc.vipr</groupId>
     <artifactId>atmos-sample</artifactId>
-    <version>2.1.4.0-SNAPSHOT</version>
+    <version>2.1.5</version>
   </parent>
   <artifactId>acdp-report-generator</artifactId>
   <groupId>com.emc.vipr.samples.atmos</groupId>
@@ -19,7 +19,7 @@
   	<dependency>
   		<groupId>com.emc.vipr</groupId>
   		<artifactId>atmos-client</artifactId>
-  		<version>2.1.4.0-SNAPSHOT</version>
+  		<version>2.1.5</version>
   	</dependency>
   	<dependency>
   		<groupId>commons-cli</groupId>
@@ -51,8 +51,7 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>com.emc.acdp.tool.ProvisioningTool</mainClass>
 								</transformer>
 							</transformers>

@@ -17,19 +17,29 @@
  */
 package com.emc.esu.test;
 
-import com.emc.atmos.util.AtmosClientFactory;
+import java.net.URI;
+import java.util.Properties;
+
+import com.emc.test.util.Concurrent;
+import com.emc.test.util.ConcurrentJunitRunner;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.emc.esu.api.EsuApi;
 import com.emc.esu.api.EsuException;
 import com.emc.esu.api.rest.EsuRestApiApache;
-import com.emc.util.PropertiesUtil;
-import junit.framework.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import com.emc.vipr.services.lib.ViprConfig;
+import org.junit.runner.RunWith;
 
 /**
  * @author jason
  *
  */
+@SuppressWarnings("deprecation")
+@RunWith(ConcurrentJunitRunner.class)
+@Concurrent
 public class EsuRestApiApacheTest extends EsuApiTest {
     /**
      * UID to run tests with.  Set in properties file or -Datmos.uid.
@@ -52,10 +62,23 @@ public class EsuRestApiApacheTest extends EsuApiTest {
     private int port = 80;
 
     public EsuRestApiApacheTest() {
-    	uid2 = PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.uid");
-    	secret = PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.secret");
-    	host = PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.host");
-    	port = Integer.parseInt( PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.port") );
+        try {
+            Properties p = ViprConfig.getProperties();
+            uid2 = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_UID);
+            secret = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SECRET);
+            URI u = new URI(ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_ENDPOINTS).split(",")[0].trim());
+            host = u.getHost();
+            port = u.getPort();
+            if(port == -1) {
+                if("http".equals(u.getScheme())) {
+                    port = 80;
+                } else if("https".equals(u.getScheme())) {
+                    port = 443;
+                }
+            }
+        } catch(Exception e) {
+            Assume.assumeNoException("Could not load Atmos configuration", e);
+        }
     }
 
     /**

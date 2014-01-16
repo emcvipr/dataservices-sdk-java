@@ -15,6 +15,8 @@
 package com.emc.vipr.services.s3;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+
+import org.junit.Assume;
 import org.junit.Before;
 
 public class NamespaceTest extends BasicS3Test {
@@ -24,6 +26,7 @@ public class NamespaceTest extends BasicS3Test {
     @Before
     public void setUp() throws Exception {
         vipr = S3ClientFactory.getS3Client(true);
+        Assume.assumeTrue("Could not configure S3 connection", vipr != null);
         try {
             vipr.createBucket(TEST_BUCKET);
         } catch (AmazonS3Exception e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class ObjectId implements Identifier {
     /**
      * Regular expression used to validate identifiers.
      */
-    private static final Pattern ID_FORMAT = Pattern.compile( "^[0-9a-f]{44}$" );
+    private static final Pattern ID_FORMAT = Pattern.compile( "^[0-9a-f]{44,}$" );
     
     /**
      * Stores the string representation of the identifier

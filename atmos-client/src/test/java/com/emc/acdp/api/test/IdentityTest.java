@@ -15,24 +15,19 @@
 
 package com.emc.acdp.api.test;
 
-import com.emc.acdp.api.AcdpAdminConfig;
-import com.emc.acdp.api.AcdpMgmtConfig;
-import com.emc.acdp.api.jersey.AcdpAdminApiClient;
-import com.emc.acdp.api.jersey.AcdpMgmtApiClient;
-import com.emc.cdp.services.rest.model.Identity;
-import com.emc.cdp.services.rest.model.IdentityList;
-import com.emc.cdp.services.rest.model.ObjectFactory;
-import com.emc.cdp.services.rest.model.Profile;
-import com.emc.util.PropertiesUtil;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Random;
+import com.emc.acdp.api.jersey.AcdpAdminApiClient;
+import com.emc.acdp.api.jersey.AcdpMgmtApiClient;
+import com.emc.cdp.services.rest.model.Identity;
+import com.emc.cdp.services.rest.model.IdentityList;
+import com.emc.cdp.services.rest.model.ObjectFactory;
+import com.emc.cdp.services.rest.model.Profile;
 
 /**
  * @author cwikj
@@ -44,8 +39,8 @@ public class IdentityTest {
     @Before
     public void setUp() throws Exception {
         try {
-            mgmt = new AcdpMgmtApiClient( loadMgmtConfig( "acdp.properties" ) );
-            admin = new AcdpAdminApiClient( loadAdminConfig( "acdp.properties" ) );
+            mgmt = new AcdpMgmtApiClient( AcdpTestUtil.loadMgmtConfig() );
+            admin = new AcdpAdminApiClient( AcdpTestUtil.loadAdminConfig() );
         } catch(Exception e) {
             Assume.assumeNoException("Loading acdp.properties failed", e);
         }
@@ -149,21 +144,5 @@ public class IdentityTest {
             sb.append( (char) ('a' + r.nextInt( 26 )) );
         }
         return sb.toString();
-    }
-
-    private AcdpMgmtConfig loadMgmtConfig( String fileName ) throws URISyntaxException {
-        URI endpoint = new URI( PropertiesUtil.getRequiredProperty(fileName, "acdp.mgmt.endpoint") );
-        String username = PropertiesUtil.getRequiredProperty(fileName, "acdp.mgmt.username");
-        String password = PropertiesUtil.getRequiredProperty(fileName, "acdp.mgmt.password");
-
-        return new AcdpMgmtConfig( endpoint.getScheme(), endpoint.getHost(), endpoint.getPort(), username, password );
-    }
-
-    private AcdpAdminConfig loadAdminConfig( String fileName ) throws URISyntaxException {
-        URI endpoint = new URI( PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.endpoint") );
-        String username = PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.username");
-        String password = PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.password");
-
-        return new AcdpAdminConfig( endpoint.getScheme(), endpoint.getHost(), endpoint.getPort(), username, password );
     }
 }

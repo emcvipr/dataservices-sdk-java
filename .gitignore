@@ -1,5 +1,5 @@
-/target
-/bin
+target
+bin
 *.class
 # Package Files #
 *.jar
@@ -12,3 +12,5 @@
 .settings
 .idea
 *.iml
+dependency-reduced-pom.xml
+esu.log

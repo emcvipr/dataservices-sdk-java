@@ -14,9 +14,14 @@
  */
 package com.emc.atmos.sync.plugins;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+
+import com.emc.atmos.api.bean.Metadata;
 
 /**
  * @author cwikj
@@ -25,20 +30,27 @@ import org.apache.commons.cli.Options;
 public class MetadataPlugin extends SyncPlugin {
 	public static final String ADD_META_OPTION = "add-meta";
 	public static final String ADD_META_DESC = "Adds a regular metadata element to items";
+	public static final String ADD_META_ARG = "name=value,name=value,...";
 	
 	public static final String ADD_LISTABLE_META_OPTION = "add-listable-meta";
 	public static final String ADD_LISTABLE_META_DESC = "Adds a listable metadata element to items";
+	
+	Map<String, Metadata> metadata;
 
-	/* (non-Javadoc)
+	/*
 	 * @see com.emc.atmos.sync.plugins.SyncPlugin#filter(com.emc.atmos.sync.plugins.SyncObject)
 	 */
 	@Override
 	public void filter(SyncObject obj) {
-		// TODO Auto-generated method stub
+		Map<String,Metadata> objmeta = obj.getMetadata().getMetadata();
+		for(String key : metadata.keySet()) {
+		    objmeta.put(key, metadata.get(key));
+		}
+
 		getNext().filter(obj);
 	}
 
-	/* (non-Javadoc)
+	/*
 	 * @see com.emc.atmos.sync.plugins.SyncPlugin#getOptions()
 	 */
 	@SuppressWarnings("static-access")
@@ -47,29 +59,65 @@ public class MetadataPlugin extends SyncPlugin {
 		Options opts = new Options();
 		
 		opts.addOption(OptionBuilder.withDescription(ADD_META_DESC)
-				.withLongOpt(ADD_META_OPTION).create());
+				.withLongOpt(ADD_META_OPTION)
+				.hasArgs().withArgName(ADD_META_ARG)
+				.withValueSeparator(',').create());
 		opts.addOption(OptionBuilder.withDescription(ADD_LISTABLE_META_DESC)
-				.withLongOpt(ADD_LISTABLE_META_OPTION).create());
+				.withLongOpt(ADD_LISTABLE_META_OPTION)
+				.hasArgs().withArgName(ADD_META_ARG)
+                .withValueSeparator(',').create());
 		
 		return opts;
 	}
 
-	/* (non-Javadoc)
+	/*
 	 * @see com.emc.atmos.sync.plugins.SyncPlugin#parseOptions(org.apache.commons.cli.CommandLine)
 	 */
 	@Override
 	public boolean parseOptions(CommandLine line) {
-		// TODO Auto-generated method stub
-		return false;
+	    metadata = new HashMap<String, Metadata>();
+	    
+	    if(line.hasOption(ADD_META_OPTION)) {
+	        String[] values = line.getOptionValues(ADD_META_OPTION);
+	        
+	        for(String value : values) {
+	            String[] parts = value.split("=", 2);
+	            if(parts.length != 2) {
+	                // Empty value?
+	                Metadata m = new Metadata(parts[0], "", false);
+	                metadata.put(parts[0], m);
+	            } else {
+                    Metadata m = new Metadata(parts[0], parts[1], false);
+                    metadata.put(parts[0], m);
+	            }
+	        }
+	    }
+	    
+	    if(line.hasOption(ADD_LISTABLE_META_OPTION)) {
+            String[] values = line.getOptionValues(ADD_LISTABLE_META_OPTION);
+            
+            for(String value : values) {
+                String[] parts = value.split("=", 2);
+                if(parts.length != 2) {
+                    // Empty value?
+                    Metadata m = new Metadata(parts[0], "", true);
+                    metadata.put(parts[0], m);
+                } else {
+                    Metadata m = new Metadata(parts[0], parts[1], true);
+                    metadata.put(parts[0], m);
+                }
+            }
+	    }
+
+		return metadata.size()>0;
 	}
 
-	/* (non-Javadoc)
+	/*
 	 * @see com.emc.atmos.sync.plugins.SyncPlugin#validateChain(com.emc.atmos.sync.plugins.SyncPlugin)
 	 */
 	@Override
 	public void validateChain(SyncPlugin first) {
-		// TODO Auto-generated method stub
-
+		// No known incompatible plugins
 	}
 
 	@Override

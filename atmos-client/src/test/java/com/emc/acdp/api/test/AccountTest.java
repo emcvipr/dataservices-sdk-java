@@ -15,24 +15,20 @@
 
 package com.emc.acdp.api.test;
 
+import java.util.List;
+import java.util.Random;
+
+import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+
 import com.emc.acdp.api.AcdpAdminApi;
 import com.emc.acdp.api.AcdpAdminConfig;
 import com.emc.acdp.api.jersey.AcdpAdminApiClient;
 import com.emc.cdp.services.rest.model.Account;
 import com.emc.cdp.services.rest.model.Attribute;
 import com.emc.cdp.services.rest.model.ObjectFactory;
-import com.emc.util.PropertiesUtil;
-
-import org.apache.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Random;
 
 /**
  * @author cwikj
@@ -45,7 +41,7 @@ public class AccountTest {
 
     public AccountTest() throws Exception {
         try {
-            config = loadAdminConfig( "acdp.properties" );
+            config = AcdpTestUtil.loadAdminConfig();
         } catch(Exception e) {
             Assume.assumeNoException("Loading acdp.properties failed", e);
         }
@@ -178,13 +174,5 @@ public class AccountTest {
             sb.append( (char) ('a' + r.nextInt( 26 )) );
         }
         return sb.toString();
-    }
-
-    private AcdpAdminConfig loadAdminConfig( String fileName ) throws URISyntaxException {
-        URI endpoint = new URI( PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.endpoint") );
-        String username = PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.username");
-        String password = PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.password");
-
-        return new AcdpAdminConfig( endpoint.getScheme(), endpoint.getHost(), endpoint.getPort(), username, password );
     }
 }

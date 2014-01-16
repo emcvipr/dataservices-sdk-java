@@ -17,7 +17,8 @@ package com.emc.atmos.api.test;
 import com.emc.atmos.api.Range;
 import com.emc.atmos.api.multipart.MultipartEntity;
 import com.emc.atmos.api.multipart.MultipartException;
-import junit.framework.Assert;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

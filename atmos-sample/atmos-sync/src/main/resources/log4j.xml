@@ -17,6 +17,12 @@
  	<logger name="com.emc.esu.api">
  		<level value="WARN"></level>
  	</logger>
+ 	
+ 	<!-- # Turn on INFO logging in com.amazonaws.request to log
+         # a summary of requests/responses with AWS request IDs -->
+	<logger name="com.amazonaws.request">
+		<level value="INFO"></level>
+	</logger>
 
 	<root>
 		<priority value="WARN" />

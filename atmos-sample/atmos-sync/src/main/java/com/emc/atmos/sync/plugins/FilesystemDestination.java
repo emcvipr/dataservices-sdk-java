@@ -186,9 +186,6 @@ public class FilesystemDestination extends DestinationPlugin {
 				throw new RuntimeException("Failed to parse URI: " + destOption + ": " + e.getMessage(), e);
 			}
 			destination = new File(u);
-			if(!destination.exists()) {
-				mkdirs(destination);
-			}
 
 			if(line.hasOption(NO_META_OPT)) {
 				noMetadata = true;

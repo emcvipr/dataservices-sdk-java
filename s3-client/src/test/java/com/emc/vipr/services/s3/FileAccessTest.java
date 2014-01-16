@@ -18,12 +18,16 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
+import com.emc.test.util.Concurrent;
+import com.emc.test.util.ConcurrentJunitRunner;
 import com.emc.vipr.services.s3.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -35,6 +39,8 @@ import static org.junit.Assert.*;
 /*
  * Test the ViPR-specific file access feature for S3
  */
+@RunWith(ConcurrentJunitRunner.class)
+@Concurrent
 public class FileAccessTest {
     private static Log log = LogFactory.getLog(FileAccessTest.class);
 
@@ -43,21 +49,20 @@ public class FileAccessTest {
     @Before
     public void setUp() throws Exception {
         s3 = S3ClientFactory.getS3Client();
+        Assume.assumeTrue("Could not configure S3 connection", s3 != null);
     }
 
     protected void createBucket(String bucketName) {
         try {
             s3.createBucket(bucketName);
         } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 409) {
-                // Ignore; bucket exists;
-            } else {
+            if (e.getStatusCode() != 409) { // ignore if bucket exists
                 throw e;
             }
         }
     }
 
-    @Ignore// TODO: add when CQ 608494 is fixed
+    @Ignore // blocked by CQ608849
     @Test
     public void testBasicReadOnly() throws Exception {
         String bucketName = "test.vipr-basic-read-only";
@@ -89,7 +94,7 @@ public class FileAccessTest {
             assertEquals("wrong user", request.getUid(), result.getUid());
 
             // wait until complete (change is asynchronous)
-            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readOnly, 60000);
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readOnly, 90);
 
             // verify mode change
             BucketFileAccessModeResult result2 = s3.getBucketFileAccessMode(bucketName);
@@ -118,7 +123,7 @@ public class FileAccessTest {
             s3.setBucketFileAccessMode(request);
 
             // wait until complete
-            waitForTransition(bucketName, ViPRConstants.FileAccessMode.disabled, 30000);
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.disabled, 90);
 
             // verify mode change
             fileAccessRequest = new GetFileAccessRequest();
@@ -135,7 +140,6 @@ public class FileAccessTest {
         }
     }
 
-    @Ignore
     @Test
     public void testReadWriteWindow() throws Exception {
         String bucketName = "test.vipr-fileaccess-window";
@@ -178,7 +182,7 @@ public class FileAccessTest {
             assertEquals("wrong user", clientUid, result.getUid());
 
             // wait until complete (change is asynchronous)
-            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readWrite, 60000);
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readWrite, 90);
 
             // verify mode change
             BucketFileAccessModeResult result2 = s3.getBucketFileAccessMode(bucketName);
@@ -235,7 +239,7 @@ public class FileAccessTest {
             assertEquals("wrong user", clientUid, result.getUid());
 
             // wait until complete (change is asynchronous)
-            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readWrite, 60000);
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readWrite, 90);
 
             // verify mode change
             result2 = s3.getBucketFileAccessMode(bucketName);
@@ -277,10 +281,10 @@ public class FileAccessTest {
 
             assertNotNull("set access-mode result is null", result);
             assertTrue("wrong access mode", request.getAccessMode() == ViPRConstants.FileAccessMode.readWrite
-                    || result.getAccessMode() == ViPRConstants.FileAccessMode.switchingToReadWrite);
+                    || result.getAccessMode() == ViPRConstants.FileAccessMode.switchingToDisabled);
 
             // wait until complete (change is asynchronous)
-            waitForTransition(bucketName, null, 60000);
+            waitForTransition(bucketName, null, 90);
 
             // verify mode change
             result2 = s3.getBucketFileAccessMode(bucketName);
@@ -325,21 +329,113 @@ public class FileAccessTest {
                     || result.getAccessMode() == ViPRConstants.FileAccessMode.switchingToDisabled);
 
             // wait until complete (change is asynchronous)
-            waitForTransition(bucketName, null, 60000);
+            waitForTransition(bucketName, null, 90);
 
             // verify mode change
             result2 = s3.getBucketFileAccessMode(bucketName);
 
             // entire bucket should be disabled now
             assertEquals("wrong access mode", ViPRConstants.FileAccessMode.disabled, result2.getAccessMode());
+        } finally {
+            cleanBucket(bucketName);
+        }
+    }
 
-            // get NFS details (should fail)
-            try {
-                s3.getFileAccess(fileAccessRequest);
-                fail("GET fileaccess should fail when access mode is disabled");
-            } catch (AmazonS3Exception e) {
-                if (!"FileAccessNotAllowed".equals(e.getErrorCode())) throw e;
+    // XXX: unfortunately there is currently no good way to automate this test
+    @Test
+    public void testPreserveIngestPaths() throws Exception {
+        String bucketName = "test.ingest";
+        String key1 = "test1.txt";
+        String key2 = "test2.txt";
+        String key3 = "test3.txt";
+        String key4 = "test4.txt";
+        String content = "Hello World!";
+        String clientHost = "10.10.10.10";
+        String clientUid = "501";
+        long fileAccessDuration = 60 * 60; // seconds (1 hour)
+
+        try {
+            // create some objects
+            s3.createBucket(bucketName);
+            Set<String> keys = new TreeSet<String>();
+            s3.putObject(bucketName, key1, new StringInputStream(content), null);
+            s3.putObject(bucketName, key2, new StringInputStream(content), null);
+            s3.putObject(bucketName, key3, new StringInputStream(content), null);
+            s3.putObject(bucketName, key4, new StringInputStream(content), null);
+            keys.addAll(Arrays.asList(key1, key2, key3, key4));
+
+            SetBucketFileAccessModeRequest requestReadOnly = new SetBucketFileAccessModeRequest();
+            requestReadOnly.setBucketName(bucketName);
+            requestReadOnly.setAccessMode(ViPRConstants.FileAccessMode.readOnly);
+            requestReadOnly.setDuration(fileAccessDuration); // seconds
+            requestReadOnly.setHostList(Arrays.asList(clientHost)); // client IP(s)
+            requestReadOnly.setUid(clientUid); // client's OS UID
+
+            // change mode to read-only
+            // this is to ensure the feature is working properly without preserve-ingest-paths
+            BucketFileAccessModeResult result = s3.setBucketFileAccessMode(requestReadOnly);
+
+            assertNotNull("set access-mode result is null", result);
+            assertTrue("wrong access mode", requestReadOnly.getAccessMode() == result.getAccessMode()
+                    || result.getAccessMode().transitionsToTarget(requestReadOnly.getAccessMode()));
+            assertTrue("wrong duration", requestReadOnly.getDuration() - result.getDuration() < 5);
+            assertArrayEquals("wrong host list", new String[]{clientHost}, result.getHostList().toArray());
+            assertEquals("wrong user", clientUid, result.getUid());
+
+            // wait until complete (change is asynchronous)
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.readOnly, 90);
+
+            // verify mode change
+            result = s3.getBucketFileAccessMode(bucketName);
+
+            assertEquals("wrong access mode", requestReadOnly.getAccessMode(), result.getAccessMode());
+            assertTrue("wrong duration", requestReadOnly.getDuration() > result.getDuration());
+            assertArrayEquals("wrong host list", new String[]{clientHost}, result.getHostList().toArray());
+            assertEquals("wrong user", clientUid, result.getUid());
+
+            // get NFS details
+            GetFileAccessRequest fileAccessRequest = new GetFileAccessRequest();
+            fileAccessRequest.setBucketName(bucketName);
+            GetFileAccessResult fileAccessResult = s3.getFileAccess(fileAccessRequest);
+
+            // verify NFS details
+            assertNotNull("fileaccess result is null", fileAccessResult);
+            assertNotNull("mounts is null", fileAccessResult.getMountPoints());
+            assertTrue("no mounts", fileAccessResult.getMountPoints().size() > 0);
+            assertNotNull("objects is null", fileAccessResult.getObjects());
+            assertEquals("wrong number of objects", 4, fileAccessResult.getObjects().size());
+            for (String key : keys) {
+                boolean found = false;
+                for (FileAccessObject object : fileAccessResult.getObjects()) {
+                    if (key.equals(object.getName())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) fail("key " + key + " not found in export list");
             }
+
+            SetBucketFileAccessModeRequest requestDisabled = new SetBucketFileAccessModeRequest();
+            requestDisabled.setBucketName(bucketName);
+            requestDisabled.setAccessMode(ViPRConstants.FileAccessMode.disabled);
+
+            // change mode to disabled
+            s3.setBucketFileAccessMode(requestDisabled);
+
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.disabled, 90);
+
+            // now try to enable with preserve-ingest-paths
+            // this should fail since the bucket was not ingested, but that's ok; we're only testing that the header
+            // is being processed
+            try {
+                requestReadOnly.setPreserveIngestPaths(true);
+                s3.setBucketFileAccessMode(requestReadOnly);
+                fail("preserving ingest paths on a standard bucket should fail");
+            } catch (AmazonS3Exception e) {
+                if (!e.getErrorCode().equals("InvalidArgument")) throw e;
+                // InvalidArgument expected
+            }
+
         } finally {
             cleanBucket(bucketName);
         }

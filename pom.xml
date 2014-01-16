@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.emc.vipr</groupId>
   <artifactId>dataservices</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <packaging>pom</packaging>
   <name>ViPR Data Services SDK for Java</name>
   <description>The ViPR Data Services SDK for Java provides Java APIs that include the enhanced functionality of ViPR
@@ -18,8 +18,11 @@
 
   <modules>
     <module>s3-client</module>
+    <module>s3-sample</module>
     <module>jersey-apache-httpclient4</module>
     <module>atmos-client</module>
+    <module>dataservices-common</module>
+    <module>atmos-sample</module>
   </modules>
 
   <distributionManagement>
@@ -32,7 +35,7 @@
   <scm>
     <url>https://github.com/emcvipr/dataservices-sdk-java</url>
     <connection>scm:git:ssh://git@github.com/emcvipr/dataservices-sdk-java.git</connection>
-    <developerConnection>scm:git:ssh://git@lcige250.lss.emc.com/vipr-data-services-sdk-java.git</developerConnection>
+    <developerConnection>scm:git:https://asdgit.isus.emc.com/git/vipr-data-services-sdk-java.git</developerConnection>
     <tag>release</tag>
   </scm>
 
@@ -47,8 +50,8 @@
   <developers>
     <developer>
       <id>emc</id>
-      <organization>EMC - ViPR Data Services</organization>
-      <organizationUrl>https://community.emc.com/community/edn/vipr-data-services</organizationUrl>
+      <organization>EMC - ViPR</organization>
+      <organizationUrl>https://community.emc.com/community/vipr</organizationUrl>
       <roles>
         <role>developer</role>
       </roles>

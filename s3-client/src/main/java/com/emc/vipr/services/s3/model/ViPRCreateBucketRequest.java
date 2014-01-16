@@ -22,8 +22,9 @@ import com.amazonaws.services.s3.model.Region;
  * the optional ViPR Project ID and Object Virtual Pool ID for the new bucket.
  */
 public class ViPRCreateBucketRequest extends CreateBucketRequest {
-    public String projectId;
-    public String vpoolId;
+    private String projectId;
+    private String vpoolId;
+    private boolean fsAccessEnabled;
 
     /**
      * @see CreateBucketRequest#CreateBucketRequest(String)
@@ -80,4 +81,22 @@ public class ViPRCreateBucketRequest extends CreateBucketRequest {
         this.vpoolId = vpoolId;
     }
 
+    /**
+     * Gets whether file system semantics (i.e. HDFS) will be enabled for the bucket.  If true,
+     * the bucket will be accessible via HDFS (if the vPool allows it).
+     * @since 1.1
+     */
+    public boolean isFsAccessEnabled() {
+        return fsAccessEnabled;
+    }
+
+    /**
+     * Sets whether file system semantics (i.e. HDFS) will be enabled for the bucket.  If true,
+     * the bucket will be accessible via HDFS (if the vPool allows it).
+     * NOTE: This feature is only available in ViPR 1.1+
+     * @since 1.1
+     */
+    public void setFsAccessEnabled(boolean fsAccessEnabled) {
+        this.fsAccessEnabled = fsAccessEnabled;
+    }
 }

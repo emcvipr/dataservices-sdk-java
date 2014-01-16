@@ -14,21 +14,30 @@
  */
 package com.emc.esu.test;
 
-import com.emc.atmos.util.AtmosClientFactory;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import com.emc.test.util.Concurrent;
+import com.emc.test.util.ConcurrentJunitRunner;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.emc.esu.api.EsuApi;
 import com.emc.esu.api.EsuException;
 import com.emc.esu.api.rest.EsuRestApi;
 import com.emc.esu.api.rest.LBEsuRestApi;
 import com.emc.esu.sysmgmt.SysMgmtApi;
-import com.emc.util.PropertiesUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import com.emc.vipr.services.lib.ViprConfig;
+import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
+@SuppressWarnings("deprecation")
+@RunWith(ConcurrentJunitRunner.class)
+@Concurrent
 public class EsuRestApiTest extends EsuApiTest {
     /**
      * UID to run tests with.  Set in properties file or -Datmos.uid.
@@ -58,11 +67,39 @@ public class EsuRestApiTest extends EsuApiTest {
     public EsuRestApiTest() {
     	super();
 
-        uid2 = PropertiesUtil.getRequiredProperty( AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.uid" );
-        secret = PropertiesUtil.getRequiredProperty( AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.secret" );
-        host = PropertiesUtil.getRequiredProperty( AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.host" );
-        port = Integer.parseInt( PropertiesUtil.getRequiredProperty( AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.port" ) );
-        hosts = PropertiesUtil.getProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.hosts");
+        try {
+            Properties p = ViprConfig.getProperties();
+            uid2 = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_UID);
+            secret = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SECRET);
+            URI u = new URI(ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_ENDPOINTS).split(",")[0].trim());
+            host = u.getHost();
+            port = u.getPort();
+            if(port == -1) {
+                if("http".equals(u.getScheme())) {
+                    port = 80;
+                } else if("https".equals(u.getScheme())) {
+                    port = 443;
+                }
+            }
+            
+            // See if there's more than one:
+            String[] endpoints = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_ENDPOINTS).split(",");
+            if(endpoints.length>1) {
+                boolean first = true;
+                hosts = "";
+                for(String s : endpoints) {
+                    u = new URI(s);
+                    if(!first) {
+                        hosts += ",";
+                    } else {
+                        first = false;
+                    }
+                    hosts += u.getHost();
+                }
+            }
+        } catch(Exception e) {
+            Assume.assumeNoException("Could not load Atmos configuration", e);
+        }
     }
 
     /**

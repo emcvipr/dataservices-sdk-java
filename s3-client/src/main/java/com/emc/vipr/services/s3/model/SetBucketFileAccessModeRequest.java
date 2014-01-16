@@ -27,6 +27,7 @@ public class SetBucketFileAccessModeRequest extends AmazonWebServiceRequest {
     private List<String> hostList;
     private String uid;
     private String token;
+    private boolean preserveIngestPaths;
 
     private static final FileAccessMode[] ALLOWED_ACCESS_MODES = {
             FileAccessMode.disabled, FileAccessMode.readOnly, FileAccessMode.readWrite};
@@ -116,5 +117,24 @@ public class SetBucketFileAccessModeRequest extends AmazonWebServiceRequest {
      */
     public void setBucketName( String bucketName ) {
         this.bucketName = bucketName;
+    }
+
+    /**
+     * @return if ingest paths will be preserved in the export
+     * @since 1.1
+     */
+    public boolean isPreserveIngestPaths() {
+        return preserveIngestPaths;
+    }
+
+    /**
+     * If the bucket was originally ingested from an NFS export, set this to true to preserve
+     * the original path structure that was present before the ingest operation.
+     * NOTE: This feature is only available in ViPR 1.1+
+     * @param preserveIngestPaths set to true to preserve the ingested file paths.
+     * @since 1.1
+     */
+    public void setPreserveIngestPaths( boolean preserveIngestPaths ) {
+        this.preserveIngestPaths = preserveIngestPaths;
     }
 }

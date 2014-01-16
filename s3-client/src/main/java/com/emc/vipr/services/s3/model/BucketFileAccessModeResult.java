@@ -25,7 +25,8 @@ public class BucketFileAccessModeResult {
 	private String uid;
 	private String startToken;
     private String endToken;
-	
+    private boolean preserveIngestPaths;
+
 	/**
 	 * @return the accessMode
 	 */
@@ -97,5 +98,22 @@ public class BucketFileAccessModeResult {
      */
     public void setEndToken(String endToken) {
         this.endToken = endToken;
+    }
+
+    /**
+     * @return if ingest paths will be preserved in the export
+     * @since 1.1
+     */
+    public boolean isPreserveIngestPaths() {
+        return preserveIngestPaths;
+    }
+
+    /**
+     * NOTE: This feature is only available in ViPR 1.1+
+     * @param preserveIngestPaths true if ingest paths will be preserved in the export
+     * @since 1.1
+     */
+    public void setPreserveIngestPaths(boolean preserveIngestPaths) {
+        this.preserveIngestPaths = preserveIngestPaths;
     }
 }

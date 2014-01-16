@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -24,16 +24,20 @@ import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.SyncBasicHttpParams;
+import sun.net.spi.DefaultProxySelector;
 
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -72,17 +76,25 @@ public class JerseyApacheUtil {
                                         SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
             }
 
-            // set proxy configuration
+            // set proxy uri
+            ProxySelector proxySelector;
             // first look in config
             URI proxyUri = config.getProxyUri();
-            // then check system props
-            if (proxyUri == null) {
+            if (proxyUri != null) {
+                proxySelector = new ConfigProxySelector(config);
+            } else {
+                // if no proxy in config, use system property sniffing selector
+                proxySelector = new DefaultProxySelector();
+
+                // and see if a proxy is set
                 String host = System.getProperty("http.proxyHost");
                 String portStr = System.getProperty("http.proxyPort");
                 int port = (portStr != null) ? Integer.parseInt(portStr) : -1;
                 if (host != null && host.length() > 0)
                     proxyUri = new URI("http", null, host, port, null, null, null);
             }
+
+            // make sure any proxy credentials (below) are associated with the proxy
             if (proxyUri != null)
                 clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI, proxyUri);
 
@@ -129,10 +141,14 @@ public class JerseyApacheUtil {
 
             // create the client
             ApacheHttpClient4 client = ApacheHttpClient4.create(clientConfig);
+            AbstractHttpClient httpClient = (AbstractHttpClient) client.getClientHandler().getHttpClient();
 
             // do not use Apache's retry handler
-            ((AbstractHttpClient) client.getClientHandler().getHttpClient()).setHttpRequestRetryHandler(
-                    new DefaultHttpRequestRetryHandler(0, false));
+            httpClient.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
+
+            // use a RoutePlanner/ProxySelector that fits our requirements
+            SchemeRegistry registry = httpClient.getConnectionManager().getSchemeRegistry();
+            httpClient.setRoutePlanner(new ProxySelectorRoutePlanner(registry, proxySelector));
 
             JerseyUtil.addFilters(client, config);
 

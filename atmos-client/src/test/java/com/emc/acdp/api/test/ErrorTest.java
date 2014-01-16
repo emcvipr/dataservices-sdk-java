@@ -14,19 +14,13 @@
  */
 package com.emc.acdp.api.test;
 
-import com.emc.acdp.AcdpException;
-import com.emc.acdp.api.AcdpAdminConfig;
-import com.emc.acdp.api.jersey.AcdpAdminApiClient;
-import com.emc.util.PropertiesUtil;
-
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.emc.acdp.AcdpException;
+import com.emc.acdp.api.jersey.AcdpAdminApiClient;
 
 public class ErrorTest {
     private static final String DO_NOT_CREATE_THIS_ACCOUNT = "delete_this_account_immediately";
@@ -36,7 +30,7 @@ public class ErrorTest {
     @Before
     public void setUp() throws Exception {
         try {
-            admin = new AcdpAdminApiClient( loadAdminConfig( "acdp.properties" ) );
+            admin = new AcdpAdminApiClient( AcdpTestUtil.loadAdminConfig() );
         } catch(Exception e) {
             Assume.assumeNoException("Loading acdp.properties failed", e);
         }
@@ -53,11 +47,4 @@ public class ErrorTest {
         }
     }
 
-    private AcdpAdminConfig loadAdminConfig( String fileName ) throws URISyntaxException {
-        URI endpoint = new URI( PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.endpoint") );
-        String username = PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.username");
-        String password = PropertiesUtil.getRequiredProperty(fileName, "acdp.admin.password");
-
-        return new AcdpAdminConfig( endpoint.getScheme(), endpoint.getHost(), endpoint.getPort(), username, password );
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -20,15 +20,23 @@ import com.emc.atmos.util.AtmosClientFactory;
 import com.emc.esu.api.EsuException;
 import com.emc.esu.api.rest.AbstractEsuRestApi;
 import com.emc.esu.test.EsuApiTest;
+
+import com.emc.test.util.Concurrent;
+import com.emc.test.util.ConcurrentJunitRunner;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(ConcurrentJunitRunner.class)
+@Concurrent
 public class EsuApiJerseyAdapterTest extends EsuApiTest {
     private AtmosConfig config;
 
     public EsuApiJerseyAdapterTest() throws Exception {
         config = AtmosClientFactory.getAtmosConfig();
+        Assume.assumeTrue("Could not load Atmos configuration", config != null);
         uid = config.getTokenId();
         config.setDisableSslValidation( true );
         config.setEnableExpect100Continue( false );

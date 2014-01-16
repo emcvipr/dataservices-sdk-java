@@ -14,18 +14,20 @@
  */
 package com.emc.esu.test;
 
-import com.emc.atmos.util.AtmosClientFactory;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import com.emc.esu.sysmgmt.ListHostsResponse;
 import com.emc.esu.sysmgmt.ListRmgResponse;
 import com.emc.esu.sysmgmt.SysMgmtApi;
 import com.emc.esu.sysmgmt.SysMgmtResponse;
 import com.emc.esu.sysmgmt.pox.GetUidResponse;
 import com.emc.esu.sysmgmt.pox.ListRmgResponsePox;
-import com.emc.util.PropertiesUtil;
-import junit.framework.Assert;
-import org.apache.log4j.Logger;
-import org.junit.Assume;
-import org.junit.Test;
+import com.emc.vipr.services.lib.ViprConfig;
 
 /**
  * @author cwikj
@@ -42,18 +44,18 @@ public class EsuSysMgmtApiTest {
 	private SysMgmtApi api;
 
 	public EsuSysMgmtApiTest() {
-    	proto = PropertiesUtil.getProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.sysmgmt.proto");
-    	Assume.assumeTrue("atmos.sysmgmt.proto is null", proto != null);
-//    	if( proto == null ) {
-//    		throw new RuntimeException( "atmos.sysmgmt.proto is null.  Set in atmos.properties or on command line with -Datmos.sysmgmt.proto" );
-//    	}
-    	host = PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.sysmgmt.host");
-    	port = Integer.parseInt( PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.sysmgmt.port") );
-    	
-    	username = PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.sysmgmt.username");
-    	password = PropertiesUtil.getRequiredProperty(AtmosClientFactory.ATMOS_PROPERTIES_FILE, "atmos.sysmgmt.password");
-    	
-    	api = new SysMgmtApi(proto, host, port, username, password);
+	    try {
+	        Properties p = ViprConfig.getProperties();
+            proto = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SYSMGMT_PROTO);
+            host = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SYSMGMT_HOST);
+            port = Integer.parseInt(ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SYSMGMT_PORT));
+            username = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SYSMGMT_USER);
+            password = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_SYSMGMT_PASS);
+	    } catch(Exception e) {
+	        Assume.assumeNoException("Could not load sysmgmt config", e);
+	    }
+
+	    api = new SysMgmtApi(proto, host, port, username, password);
     	
     	try {
 			SysMgmtApi.disableCertificateValidation();

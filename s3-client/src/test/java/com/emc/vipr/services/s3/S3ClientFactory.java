@@ -14,11 +14,7 @@
  */
 package com.emc.vipr.services.s3;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -31,12 +27,15 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3EncryptionClient;
 import com.amazonaws.services.s3.model.EncryptionMaterials;
+import com.emc.vipr.services.lib.ViprConfig;
 
 /**
  * This class looks on the classpath for a file named viprs3.properties and uses it to
@@ -53,44 +52,8 @@ import com.amazonaws.services.s3.model.EncryptionMaterials;
  *
  */
 public class S3ClientFactory {
-    public static final String VIPR_PROPERTIES_FILE = "vipr.properties";
+    private static Log log = LogFactory.getLog(S3ClientFactory.class);
     
-    public static final String PROP_ACCESS_KEY_ID = "vipr.s3.access_key_id";
-    public static final String PROP_SECRET_KEY = "vipr.s3.secret_key";
-    public static final String PROP_ENDPOINT = "vipr.s3.endpoint";
-    public static final String PROP_NAMESPACE = "vipr.namespace";
-    public static final String PROP_PUBLIC_KEY = "vipr.encryption.publickey";
-    public static final String PROP_PRIVATE_KEY = "vipr.encryption.privatekey";
-    public static final String PROP_PROXY_HOST = "vipr.proxy.host";
-    public static final String PROP_PROXY_PORT = "vipr.proxy.port";
-    
-    /**
-     * Locates and loads the properties file for the test configuration.  This file can
-     * reside in one of two places: somewhere in the CLASSPATH or in the user's home
-     * directory.
-     * @return the contents of the properties file as a {@link Properties} object.
-     * @throws FileNotFoundException if the file was not found
-     * @throws IOException if there was an error reading the file.
-     */
-    public static Properties getProperties() throws FileNotFoundException, IOException {
-        InputStream in = S3ClientFactory.class.getClassLoader().getResourceAsStream(VIPR_PROPERTIES_FILE);
-        if(in == null) {
-            // Check in home directory
-            File homeProps = new File(System.getProperty("user.home") + File.separator + 
-                    VIPR_PROPERTIES_FILE);
-            if(homeProps.exists()) {
-                in = new FileInputStream(homeProps);
-            } else {
-                throw new FileNotFoundException(VIPR_PROPERTIES_FILE);
-            }
-        }
-        
-        Properties props = new Properties();
-        props.load(in);
-        in.close();
-        
-        return props;
-    }
 
     public static ViPRS3Client getS3Client() {
         return getS3Client(false);
@@ -98,16 +61,16 @@ public class S3ClientFactory {
 
     public static ViPRS3Client getS3Client(boolean setNamespace) {
         try {
-            Properties props = getProperties();
+            Properties props = ViprConfig.getProperties();
             
-            String accessKey = getPropertyNotEmpty(props, PROP_ACCESS_KEY_ID);
-            String secretKey = getPropertyNotEmpty(props, PROP_SECRET_KEY);
-            String endpoint = getPropertyNotEmpty(props, PROP_ENDPOINT);
+            String accessKey = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_S3_ACCESS_KEY_ID);
+            String secretKey = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_S3_SECRET_KEY);
+            String endpoint = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_S3_ENDPOINT);
             
             BasicAWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
             ViPRS3Client client = new ViPRS3Client(endpoint, creds);
 
-            String namespace = props.getProperty(PROP_NAMESPACE);
+            String namespace = props.getProperty(ViprConfig.PROP_NAMESPACE);
             if(namespace != null && setNamespace) {
                client.setNamespace(namespace);
             }
@@ -115,7 +78,8 @@ public class S3ClientFactory {
             
             return client;
         } catch (IOException e) {
-            throw new RuntimeException("Could not load properties file", e);
+            log.info("Failed to load properties: " + e);
+            return null;
         }
     }
     
@@ -126,58 +90,55 @@ public class S3ClientFactory {
      * @throws IOException
      */
     public static AmazonS3EncryptionClient getEncryptionClient() throws IOException {
-        Properties props = getProperties();
-        
-        String accessKey = getPropertyNotEmpty(props, PROP_ACCESS_KEY_ID);
-        String secretKey = getPropertyNotEmpty(props, PROP_SECRET_KEY);
-        String endpoint = getPropertyNotEmpty(props, PROP_ENDPOINT);
-        String publicKey = getPropertyNotEmpty(props, PROP_PUBLIC_KEY);
-        String privateKey = getPropertyNotEmpty(props, PROP_PRIVATE_KEY);
-        
-        byte[] pubKeyBytes = Base64.decodeBase64(publicKey.getBytes("US-ASCII"));
-        byte[] privKeyBytes = Base64.decodeBase64(privateKey.getBytes("US-ASCII"));
-        
-        X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKeyBytes);
-        PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(privKeyBytes);
-        
-        PublicKey pubKey;
-        PrivateKey privKey;
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            pubKey = keyFactory.generatePublic(pubKeySpec);
-            privKey = keyFactory.generatePrivate(privKeySpec);
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException("Could not load key pair: " + e, e);
+            Properties props = ViprConfig.getProperties();
+            
+            String accessKey = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_S3_ACCESS_KEY_ID);
+            String secretKey = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_S3_SECRET_KEY);
+            String endpoint = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_S3_ENDPOINT);
+            String publicKey = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_PUBLIC_KEY);
+            String privateKey = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_PRIVATE_KEY);
+            
+            byte[] pubKeyBytes = Base64.decodeBase64(publicKey.getBytes("US-ASCII"));
+            byte[] privKeyBytes = Base64.decodeBase64(privateKey.getBytes("US-ASCII"));
+            
+            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKeyBytes);
+            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(privKeyBytes);
+            
+            PublicKey pubKey;
+            PrivateKey privKey;
+            try {
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                pubKey = keyFactory.generatePublic(pubKeySpec);
+                privKey = keyFactory.generatePrivate(privKeySpec);
+            } catch (GeneralSecurityException e) {
+                throw new RuntimeException("Could not load key pair: " + e, e);
+            }
+            
+            EncryptionMaterials keys = new EncryptionMaterials(new KeyPair(pubKey, privKey));
+            
+            BasicAWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
+            AmazonS3EncryptionClient client = new AmazonS3EncryptionClient(creds, keys);
+            client.setEndpoint(endpoint);
+            
+            checkProxyConfig(client, props);
+            
+            return client;
+        } catch(Exception e) {
+            log.info("Could not load configuration: " + e);
+            return null;
         }
-        
-        EncryptionMaterials keys = new EncryptionMaterials(new KeyPair(pubKey, privKey));
-        
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
-        AmazonS3EncryptionClient client = new AmazonS3EncryptionClient(creds, keys);
-        client.setEndpoint(endpoint);
-        
-        checkProxyConfig(client, props);
-        
-        return client;
     }
     
     private static void checkProxyConfig(AmazonS3Client client, Properties props) {
-        String proxyHost = props.getProperty(PROP_PROXY_HOST);
+        String proxyHost = props.getProperty(ViprConfig.PROP_PROXY_HOST);
         if(proxyHost != null && !proxyHost.isEmpty()) {
-            int proxyPort = Integer.parseInt(props.getProperty(PROP_PROXY_PORT));
+            int proxyPort = Integer.parseInt(props.getProperty(ViprConfig.PROP_PROXY_PORT));
             ClientConfiguration config = new ClientConfiguration();
             config.setProxyHost(proxyHost);
             config.setProxyPort(proxyPort);
             client.setConfiguration(config);
         }        
-    }
-    
-    private static String getPropertyNotEmpty(Properties p, String key) {
-        String value = p.getProperty(key);
-        if(value == null || value.isEmpty()) {
-            throw new RuntimeException(String.format("The property %s is required", key));
-        }
-        return value;
     }
     
     // Generates a RSA key pair for testing.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 package com.emc.atmos.api.test;
 
 import com.emc.atmos.AtmosException;
+import com.emc.atmos.StickyThreadAlgorithm;
 import com.emc.atmos.api.*;
 import com.emc.atmos.api.bean.*;
+import com.emc.atmos.api.jersey.AtmosApiBasicClient;
 import com.emc.atmos.api.jersey.AtmosApiClient;
 import com.emc.atmos.api.multipart.MultipartEntity;
 import com.emc.atmos.api.request.*;
 import com.emc.atmos.util.AtmosClientFactory;
 import com.emc.atmos.util.RandomInputStream;
+import com.emc.atmos.util.ReorderedFormDataContentDisposition;
+import com.emc.test.util.Concurrent;
+import com.emc.test.util.ConcurrentJunitRunner;
 import com.emc.util.StreamUtil;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -34,6 +39,7 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.junit.*;
+import org.junit.runner.RunWith;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -47,6 +53,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+@RunWith(ConcurrentJunitRunner.class)
+@Concurrent
 public class AtmosApiClientTest {
     public static Logger l4j = Logger.getLogger( AtmosApiClientTest.class );
 
@@ -54,37 +62,37 @@ public class AtmosApiClientTest {
      * Use this as a prefix for namespace object paths and you won't have to clean up after yourself.
      * This also keeps all test objects under one folder, which is easy to delete should something go awry.
      */
-    protected static final String TESTDIR = "/test_" + AtmosApiClientTest.class.getSimpleName() + "/";
+    protected static final String TEST_DIR_PREFIX = "/test_" + AtmosApiClientTest.class.getSimpleName();
 
     protected AtmosConfig config;
     protected AtmosApi api;
 
     protected List<ObjectIdentifier> cleanup = Collections.synchronizedList( new ArrayList<ObjectIdentifier>() );
+    protected List<ObjectPath> cleanupDirs = Collections.synchronizedList( new ArrayList<ObjectPath>() );
 
     public AtmosApiClientTest() throws Exception {
         config = AtmosClientFactory.getAtmosConfig();
+        Assume.assumeTrue("Could not load Atmos configuration", config != null);
         config.setDisableSslValidation( false );
         config.setEnableExpect100Continue( false );
         config.setEnableRetry( false );
+        config.setLoadBalancingAlgorithm( new StickyThreadAlgorithm() );
         api = new AtmosApiClient( config );
     }
 
     @After
     public void tearDown() {
-        for ( final ObjectIdentifier cleanItem : cleanup ) {
-            new Thread() {
-                public void run() {
-                    try {
-                        api.delete( cleanItem );
-                    } catch ( Throwable t ) {
-                        System.out.println( "Failed to delete " + cleanItem + ": " + t.getMessage() );
-                    }
-                }
-            }.start();
+        for ( ObjectIdentifier cleanItem : cleanup ) {
+            try {
+                api.delete( cleanItem );
+            } catch ( Throwable t ) {
+                System.out.println( "Failed to delete " + cleanItem + ": " + t.getMessage() );
+            }
         }
-        try { // if the test directory exists, recursively delete it
-            this.api.getSystemMetadata( new ObjectPath( TESTDIR ) );
-            deleteRecursively( new ObjectPath( TESTDIR ) );
+        try { // if test directories exists, recursively delete them
+            for ( ObjectPath testDir : cleanupDirs ) {
+                deleteRecursively( testDir );
+            }
         } catch ( AtmosException e ) {
             if ( e.getHttpCode() != 404 ) {
                 l4j.warn( "Could not delete test dir: ", e );
@@ -112,6 +120,14 @@ public class AtmosApiClientTest {
             } while ( request.getToken() != null );
         }
         this.api.delete( path );
+    }
+
+    protected ObjectPath createTestDir( String name ) {
+        if (!name.endsWith("/")) name = name + "/";
+        ObjectPath path = new ObjectPath( TEST_DIR_PREFIX + "_" + name );
+        this.api.createDirectory( path );
+        cleanupDirs.add( path );
+        return path;
     }
 
     //
@@ -225,7 +241,7 @@ public class AtmosApiClientTest {
         String fourByteCharacters = "\ud841\udf0e\ud841\udf31\ud841\udf79\ud843\udc53"; // Chinese symbols
         String crazyName = oneByteCharacters + twoByteCharacters + fourByteCharacters;
         byte[] content = "Crazy name creation test.".getBytes( "UTF-8" );
-        ObjectPath parent = new ObjectPath( TESTDIR );
+        ObjectPath parent = createTestDir( "Utf8Path" );
         ObjectPath path = new ObjectPath( parent, crazyName );
 
         // create crazy-name object
@@ -1316,47 +1332,41 @@ public class AtmosApiClientTest {
      */
     @Test
     public void testDotDirectories() throws Exception {
-        String parentPath = TESTDIR + "dottest/";
-        String dotPath = parentPath + "./";
-        String dotdotPath = parentPath + "../";
+        ObjectPath parentPath = createTestDir("DotDirectories");
+        ObjectPath dotPath = new ObjectPath( parentPath, "./" );
+        ObjectPath dotdotPath = new ObjectPath( parentPath, "../" );
         String filename = rand8char();
-        byte[] content = "Hello World!".getBytes( "UTF-8" );
-
-        // isolate this test in the namespace
-        ObjectId parentId = this.api.createDirectory( new ObjectPath( parentPath ) );
+        byte[] content = "Hello World!".getBytes("UTF-8");
 
         // test single dot path (./)
-        ObjectId fileId = this.api.createObject( new ObjectPath( parentPath + rand8char() ), content, "text/plain" );
-        cleanup.add( fileId );
-        ObjectId dirId = this.api.createDirectory( new ObjectPath( dotPath ) );
+        ObjectId dirId = this.api.createDirectory( dotPath );
         Assert.assertNotNull( "null ID returned on dot path creation", dirId );
-        fileId = this.api.createObject( new ObjectPath( dotPath + filename ), content, "text/plain" );
+        ObjectId fileId = this.api.createObject( new ObjectPath( dotPath, filename ), content, "text/plain" );
+        cleanup.add( fileId );
+        cleanup.add( dirId );
 
         // make sure we only see one file (the "." path is its own directory and not a synonym for the current directory)
         List<DirectoryEntry> entries = this.api
-                .listDirectory( new ListDirectoryRequest().path( new ObjectPath( dotPath ) ) ).getEntries();
+                .listDirectory( new ListDirectoryRequest().path( dotPath ) ).getEntries();
         Assert.assertEquals( "dot path listing was not 1", entries.size(), 1 );
         Assert.assertEquals( "dot path listing did not contain test file",
                              entries.get( 0 ).getFilename(),
                              filename );
-        cleanup.add( fileId );
-        cleanup.add( dirId );
 
         // test double dot path (../)
-        dirId = this.api.createDirectory( new ObjectPath( dotdotPath ) );
+        dirId = this.api.createDirectory( dotdotPath );
         Assert.assertNotNull( "null ID returned on dotdot path creation", dirId );
-        fileId = this.api.createObject( new ObjectPath( dotdotPath + filename ), content, "text/plain" );
+        fileId = this.api.createObject( new ObjectPath( dotdotPath, filename ), content, "text/plain" );
+        cleanup.add( fileId );
+        cleanup.add( dirId );
 
         // make sure we only see one file (the ".." path is its own directory and not a synonym for the parent directory)
         entries = this.api
-                .listDirectory( new ListDirectoryRequest().path( new ObjectPath( dotdotPath ) ) ).getEntries();
+                .listDirectory( new ListDirectoryRequest().path( dotdotPath ) ).getEntries();
         Assert.assertEquals( "dotdot path listing was not 1", entries.size(), 1 );
-        Assert.assertEquals( "dotdot path listing did not contain test file",
-                             entries.get( 0 ).getFilename(),
-                             filename );
-        cleanup.add( fileId );
-        cleanup.add( dirId );
-        cleanup.add( parentId );
+        Assert.assertEquals("dotdot path listing did not contain test file",
+                entries.get(0).getFilename(),
+                filename);
     }
 
     /**
@@ -1879,34 +1889,33 @@ public class AtmosApiClientTest {
      */
     @Test
     public void testUtf8Rename() throws Exception {
+        ObjectPath parentDir = createTestDir("Utf8Rename");
         String oneByteCharacters = "Hello! ,";
         String twoByteCharacters = "\u0410\u0411\u0412\u0413"; // Cyrillic letters
         String fourByteCharacters = "\ud841\udf0e\ud841\udf31\ud841\udf79\ud843\udc53"; // Chinese symbols
-        String normalName = TESTDIR + rand8char() + ".tmp";
+        ObjectPath normalName = new ObjectPath( parentDir, rand8char() + ".tmp");
         String crazyName = oneByteCharacters + twoByteCharacters + fourByteCharacters;
-        String crazyPath = TESTDIR + crazyName;
+        ObjectPath crazyPath = new ObjectPath( parentDir, crazyName );
         byte[] content = "This is a really crazy name.".getBytes( "UTF-8" );
 
         // normal name
-        this.api.createObject( new ObjectPath( normalName ), content, "text/plain" );
+        this.api.createObject( normalName, content, "text/plain" );
 
         // crazy multi-byte character name
-        this.api.move( new ObjectPath( normalName ), new ObjectPath( crazyPath ), true );
+        this.api.move( normalName, crazyPath, true );
 
         // Wait for overwrite to complete
         Thread.sleep( 5000 );
 
         // verify name in directory list
-        List<DirectoryEntry> entries = this.api
-                .listDirectory( new ListDirectoryRequest().path( new ObjectPath( TESTDIR ) ) )
-                .getEntries();
+        List<DirectoryEntry> entries = this.api.listDirectory(new ListDirectoryRequest().path(parentDir)).getEntries();
 
         Assert.assertTrue( "crazyName not found in directory listing", directoryContains( entries, crazyName ) );
 
         // Read back the content
         Assert.assertTrue( "object content wrong",
                            Arrays.equals( content,
-                                          this.api.readObject( new ObjectPath( crazyPath ), null, byte[].class ) ) );
+                                          this.api.readObject( crazyPath, null, byte[].class ) ) );
     }
 
     /**
@@ -1971,7 +1980,7 @@ public class AtmosApiClientTest {
 
         // Check policyname
         Map<String,Metadata> sysmeta = this.api.getSystemMetadata(id, "policyname");
-        Assume.assumeTrue("policyname != retaindelete", "retaindelete".equals(sysmeta.get("policyname")));
+        Assume.assumeTrue("policyname != retaindelete", "retaindelete".equals(sysmeta.get("policyname").getValue()));
 
         // Get the object info
         ObjectInfo oi = this.api.getObjectInfo( id );
@@ -2341,7 +2350,8 @@ public class AtmosApiClientTest {
     @Ignore("Blocked by Bug 30073")
     @Test
     public void testReadAccessToken() throws Exception {
-        ObjectPath path = new ObjectPath( TESTDIR + "read_token \n,<x> test" );
+        ObjectPath parentDir = createTestDir("ReadAccessToken");
+        ObjectPath path = new ObjectPath( parentDir, "read_token \n,<x> test" );
         ObjectId id = api.createObject( path, "hello", "text/plain" );
 
         Calendar expiration = Calendar.getInstance();
@@ -2390,8 +2400,8 @@ public class AtmosApiClientTest {
     @Ignore("Blocked by Bug 30073")
     @Test
     public void testWriteAccessToken() throws Exception {
-        api.createDirectory( new ObjectPath( TESTDIR ) );
-        ObjectPath path = new ObjectPath( TESTDIR + "write_token_test" );
+        ObjectPath parentDir = createTestDir("WriteAccessToken");
+        ObjectPath path = new ObjectPath( parentDir, "write_token_test" );
 
         Calendar expiration = Calendar.getInstance();
         expiration.add( Calendar.MINUTE, 10 ); // 10 minutes from now
@@ -2476,7 +2486,8 @@ public class AtmosApiClientTest {
     @Ignore("Blocked by Bug 30073")
     @Test
     public void testListAccessTokens() throws Exception {
-        ObjectPath path = new ObjectPath( TESTDIR + "read_token_test" );
+        ObjectPath parentDir = createTestDir("ListAccessTokens");
+        ObjectPath path = new ObjectPath( parentDir, "read_token_test" );
         ObjectId id = api.createObject( path, "hello", "text/plain" );
 
         Calendar expiration = Calendar.getInstance();
@@ -2614,6 +2625,7 @@ public class AtmosApiClientTest {
             Assert.assertEquals( "input stream was read", 5, is.available() );
         } finally {
             config.setTokenId( tokenId );
+            is.close();
         }
     }
 
@@ -2657,6 +2669,61 @@ public class AtmosApiClientTest {
         if ( !errorList.isEmpty() ) {
             for ( Throwable t : errorList ) t.printStackTrace();
             Assert.fail( "At least one thread failed" );
+        }
+    }
+
+    @Test
+    public void testProxyConfiguration() {
+        AtmosConfig config = AtmosClientFactory.getAtmosConfig();
+        URI proxyUri = config.getProxyUri();
+
+        // don't run this test without a proxy config
+        Assume.assumeNotNull(proxyUri);
+
+        // capture existing system props for safety
+        String oldProxyHost = System.getProperty("http.proxyHost");
+        String oldProxyPort = System.getProperty("http.proxyPort");
+        try {
+            // just create and delete an object in each scenario
+            // 1) URLConnection - no proxy
+            config.setProxyUri(null);
+            AtmosApi atmos = new AtmosApiBasicClient(config);
+            ObjectId oid = atmos.createObject("URLConnection with no proxy", "text/plain");
+            atmos.delete(oid);
+
+            // 2) Apache - no proxy
+            atmos = new AtmosApiClient(config);
+            oid = atmos.createObject("Apache with no proxy", "text/plain");
+            atmos.delete(oid);
+
+            // 3) URLConnection - with config proxy
+            config.setProxyUri(proxyUri);
+            atmos = new AtmosApiBasicClient(config);
+            oid = atmos.createObject("URLConnection with config proxy", "text/plain");
+            atmos.delete(oid);
+
+            // 4) Apache - with config proxy
+            atmos = new AtmosApiClient(config);
+            oid = atmos.createObject("Apache with config proxy", "text/plain");
+            atmos.delete(oid);
+
+            // 5) URLConnection - with system props (old school) proxy
+            config.setProxyUri(null);
+            System.setProperty("http.proxyHost", proxyUri.getHost());
+            System.setProperty("http.proxyPort", ""+proxyUri.getPort());
+            atmos = new AtmosApiBasicClient(config);
+            oid = atmos.createObject("URLConnection with sysprop proxy", "text/plain");
+            atmos.delete(oid);
+
+            // 6) Apache - with system props (old school) proxy
+            // can't specify proxy user/pass in system props
+            atmos = new AtmosApiClient(config);
+            oid = atmos.createObject("Apache with sysprop proxy", "text/plain");
+            atmos.delete(oid);
+        } finally {
+            // now play nice and reset old props
+            if (oldProxyHost != null) System.setProperty("http.proxyHost", oldProxyHost);
+            if (oldProxyPort != null) System.setProperty("http.proxyPort", oldProxyPort);
         }
     }
 

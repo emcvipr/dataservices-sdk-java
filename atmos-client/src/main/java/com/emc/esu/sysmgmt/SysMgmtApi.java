@@ -294,7 +294,7 @@ public class SysMgmtApi {
 		// Extract cookie
 		String cookies = con.getHeaderField("Set-Cookie");
 		
-		Pattern cookiePattern = Pattern.compile("_gui_session_id=([0-9a-f]+);");
+        Pattern cookiePattern = Pattern.compile("_gui_session_id=([^;]+);.*");
 		Matcher m = cookiePattern.matcher(cookies);
 		if(!m.find()) {
 			throw new RuntimeException("Could not parse session cookie from " + cookies);
@@ -332,7 +332,7 @@ public class SysMgmtApi {
 		// Extract cookie
 		String cookies = con.getHeaderField("Set-Cookie");
 		
-		Pattern cookiePattern = Pattern.compile("_gui_session_id=([0-9a-f]+);");
+		Pattern cookiePattern = Pattern.compile("_gui_session_id=([^;]+);.*");
 		Matcher m = cookiePattern.matcher(cookies);
 		if(!m.find()) {
 			throw new RuntimeException("Could not parse session cookie from " + cookies);

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,6 +39,7 @@ public class S3EncryptionClientTest {
     @Before
     public void setUp() throws Exception{
         s3 = S3ClientFactory.getEncryptionClient();
+        Assume.assumeTrue("Could not configure S3 connection", s3 != null);
         try {
             s3.createBucket(TEST_BUCKET);
         } catch(AmazonS3Exception e) {

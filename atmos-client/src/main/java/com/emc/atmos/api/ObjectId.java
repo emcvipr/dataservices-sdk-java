@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Represents an object ID (44-character hexadecimal value) that is the primary identifier for an object in Atmos.
+ * Represents an object ID (44+ character hexadecimal value) that is the primary identifier for an object in Atmos.
  */
 public class ObjectId implements ObjectIdentifier {
     private String id;

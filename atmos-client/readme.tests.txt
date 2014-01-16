@@ -1,45 +1,39 @@
------------------------------------
-| Java REST Testcases for EMC ESU |
------------------------------------
+---------------------------------
+| Java REST Testcases for Atmos |
+---------------------------------
 
-This API allows Java developers to easily connect to EMC's ESU 
-Storage.  It handles all of the low-level tasks such as generating and signing 
-requests, connecting to the server, and parsing server responses.  It also 
-includes helper classes to help automate basic tasks such as creating, updating,
-and downloading object content from the cloud.
+Configuration
+-------------
+Before running the testcases, a file named vipr.properties must be either put on the
+classpath (e.g. src/test/resources) or present in your home directory.  The file should
+contain the following configuration keys:
 
-Requirements
-------------
- * Java 1.5+
- * Log4J 1.2+ (included, Apache License)
- * JDOM 1.0+  (included, see jdom-license.txt)
- * JUnit 4.4+ (included, CPL 1.0 license) 
- * Apache Commons Codec v1.3+ (Included, Apache License.)
- * Apache Ant 1.7+ (for running build scripts only)
+Atmos:
+vipr.atmos.uid - Atmos full token uid (e.g. 123daba33425413251/user1)
+vipr.atmos.secret_key - Shared secret key for the uid
+vipr.atmos.endpoints - Comma separated list of endpoint URIs (more than one is optional)
+
+ACDP:
+acdp.admin.endpoint - ACDP admin endpoint, usually http://admin_node:8080/
+acdp.admin.username - ACDP administrator username
+acdp.admin.password - ACDP administrator password
+acdp.mgmt.endpoint - ACDP management endpoint, usually http://portal_node:8080/
+acdp.mgmt.username - ACDP management user (account user)
+acdp.mgmt.password - ACDP management password
+
+Atmos System Management:
+atmos.sysmgmt.proto - System management protocol (usually https)
+atmos.sysmgmt.host - System management host (primary or secondary node in RMG)
+atmos.sysmgmt.port - System management port (usually 443)
+atmos.sysmgmt.username - System management user
+atmos.sysmgmt.password - System management password
+    
+If a particular configuration key is missing, that test group will be skipped.
+
  
 Running the Testcases
 ---------------------
-Before running the testcases, please compile the REST API or include the
-emcesu.jar in your classpath.
+The tests are run through Maven.  You can run them with:
 
-To run the testcases, first edit the testcase class and set the IP address of
-the ESU node you want to connect to, your UID, and shared secret.  If you are
-developing under Eclipse, simply right-click on the test class (EsuRestApiTest)
-and select Run As->JUnit Test.  Otherwise, you may execute the testcases under
-Apache Ant using the 'test' target.
-
-
-Socket errors on older versions of Windows
-------------------------------------------
-On Windows XP and older versions of windows, a client making many requests
-may run out of client sockets.  The error you see will look like:
-
-java.net.BindException: Address already in use: connect
-
-This is because Windows only allows client sockets up to port 5000 by default
-and when a socket is closed it remains in TIME_WAIT for 180 seconds.  Thus, if
-you make more than 4000 requests in 3 minutes you will likely see these errors.
-You can fix this problem by editing the registry and changing MaxUserPort and
-TCPTimedWaitDelay settings.  This is discussed in the article:
-http://support.microsoft.com/kb/196271/en-us
+mvn test
 

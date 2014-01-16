@@ -17,6 +17,7 @@ package com.emc.atmos.util;
 import com.emc.atmos.api.AtmosApi;
 import com.emc.atmos.api.AtmosConfig;
 import com.emc.atmos.api.jersey.AtmosApiClient;
+import com.emc.vipr.services.lib.ViprConfig;
 
 import java.io.*;
 import java.net.URI;
@@ -24,6 +25,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class looks on the classpath for a file named atmos.properties and uses it to
@@ -38,57 +41,24 @@ import java.util.Properties;
  * @author cwikj
  */
 public class AtmosClientFactory {
-    public static final String ATMOS_PROPERTIES_FILE = "atmos.properties";
-
-    public static final String PROP_UID = "atmos.uid";
-    public static final String PROP_SECRET = "atmos.secret";
-    public static final String PROP_ENDPOINTS = "atmos.endpoints";
-    public static final String PROP_PROXY = "atmos.proxyUrl";
-
-    private static Properties properties;
-
-    /**
-     * Locates and loads the properties file for the test configuration.  This file can
-     * reside in one of two places: somewhere in the CLASSPATH or in the user's home
-     * directory.
-     *
-     * @return the contents of the properties file as a {@link java.util.Properties} object.
-     * @throws java.io.FileNotFoundException if the file was not found
-     * @throws java.io.IOException           if there was an error reading the file.
-     */
-    public static synchronized Properties getProperties() throws IOException {
-        if (properties != null) return properties;
-
-        InputStream in = AtmosClientFactory.class.getClassLoader().getResourceAsStream(ATMOS_PROPERTIES_FILE);
-        if (in == null) {
-            // Check in home directory
-            File homeProps = new File(System.getProperty("user.home") + File.separator + ATMOS_PROPERTIES_FILE);
-            if (homeProps.exists()) {
-                in = new FileInputStream(homeProps);
-            } else {
-                throw new FileNotFoundException(ATMOS_PROPERTIES_FILE);
-            }
-        }
-
-        properties = new Properties();
-        properties.load(in);
-        in.close();
-
-        return properties;
-    }
+    private static final Logger l4j = Logger.getLogger(AtmosClientFactory.class);
 
     public static AtmosApi getAtmosClient() {
+        AtmosConfig config = getAtmosConfig();
+        if(config == null) {
+            return null;
+        }
         return new AtmosApiClient(getAtmosConfig());
     }
 
     public static AtmosConfig getAtmosConfig() {
         try {
-            Properties props = getProperties();
+            Properties props = ViprConfig.getProperties();
 
-            String uid = getPropertyNotEmpty(props, PROP_UID);
-            String secret = getPropertyNotEmpty(props, PROP_SECRET);
-            String endpoints = getPropertyNotEmpty(props, PROP_ENDPOINTS);
-            String proxyUrl = props.getProperty(PROP_PROXY);
+            String uid = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_ATMOS_UID);
+            String secret = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_ATMOS_SECRET);
+            String endpoints = ViprConfig.getPropertyNotEmpty(props, ViprConfig.PROP_ATMOS_ENDPOINTS);
+            String proxyUrl = ViprConfig.getProxyUri(props);
 
             List<URI> endpointUris = new ArrayList<URI>();
             for (String endpoint : endpoints.split(",")) {
@@ -100,17 +70,12 @@ public class AtmosClientFactory {
 
             return config;
         } catch (IOException e) {
-            throw new RuntimeException("Could not load properties file", e);
+            l4j.info("Could not load properties file: " + e);
+            return null;
         } catch (URISyntaxException e) {
-            throw new RuntimeException("Invalid endpoint or proxy URI", e);
+           l4j.info("Invalid endpoint or proxy URI: " + e);
+           return null;
         }
     }
 
-    private static String getPropertyNotEmpty(Properties p, String key) {
-        String value = p.getProperty(key);
-        if (value == null || value.isEmpty()) {
-            throw new RuntimeException(String.format("The property %s is required", key));
-        }
-        return value;
-    }
 }

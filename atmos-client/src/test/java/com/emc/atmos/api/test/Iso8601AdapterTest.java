@@ -15,7 +15,8 @@
 package com.emc.atmos.api.test;
 
 import com.emc.atmos.api.bean.adapter.Iso8601Adapter;
-import junit.framework.Assert;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Calendar;

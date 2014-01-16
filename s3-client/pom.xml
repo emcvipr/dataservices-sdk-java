@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.emc.vipr</groupId>
     <artifactId>dataservices</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
   </parent>
   <artifactId>s3-client</artifactId>
   <packaging>jar</packaging>
@@ -12,7 +12,13 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
-      <version>1.4.5</version>
+      <version>1.6.11</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.emc.vipr</groupId>
+    	<artifactId>dataservices-common</artifactId>
+    	<version>1.1</version>
+    	<scope>test</scope>
     </dependency>
   </dependencies>
 

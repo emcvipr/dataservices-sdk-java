@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.emc.atmos.sync.plugins.*;
 import com.emc.atmos.sync.util.TimingUtil;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -71,6 +72,7 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 		plugins.add(new OverrideMimetypePlugin());
 		plugins.add(new ShellCommandPlugin());
         plugins.add(new PolicyTransitionPlugin());
+        plugins.add(new S3Destination());
 		
 		Map<String,SyncPlugin> optionMap = new HashMap<String, SyncPlugin>();
 		

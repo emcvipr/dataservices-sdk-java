@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public abstract class AbstractEsuRestApi implements EsuApi {
             "EEE, d MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     private static final Pattern OBJECTID_EXTRACTOR = Pattern
-            .compile("/\\w+/objects/([0-9a-f]{44})");
+            .compile("/\\w+/objects/([0-9a-f]{44,})");
     private static final Logger l4j = Logger.getLogger( AbstractEsuRestApi.class );
 
     protected String host;

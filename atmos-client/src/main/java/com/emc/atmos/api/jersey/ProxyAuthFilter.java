@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 EMC Corporation. All Rights Reserved.
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -47,6 +47,9 @@ public class ProxyAuthFilter extends ClientFilter {
             } catch ( UnsupportedEncodingException e ) {
                 userPass64 = Base64.encodeBase64String( userPass.getBytes() );
             }
+
+            // Java bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459815
+            userPass64 = userPass64.replaceAll("\n", "");
 
             request.getHeaders().putSingle( "Proxy-Authorization", "Basic " + userPass64 );
         }
