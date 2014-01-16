@@ -38,7 +38,6 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.transform.Unmarshaller;
 import com.amazonaws.util.*;
 import com.emc.vipr.services.s3.model.*;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -494,11 +493,6 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
             resourcePath = "/" + namespace + resourcePath;
         }
 
-        // if we're using a vHost request, the namespace must be prepended to the resource path when signing
-        if (namespace != null && vHostRequest(request, bucketName)) {
-            resourcePath = "/" + namespace + resourcePath;
-        }
-
         return new ViPRS3Signer(request.getHttpMethod().toString(), resourcePath);
     }
 
@@ -884,136 +878,6 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
                 // request with no location constraint and hope for the best.
             }
 
-        }
-
-        /*
-         * We can only send the CreateBucketConfiguration if we're *not*
-         * creating a bucket in the US region.
-         */
-        if (region != null && !region.toUpperCase().equals(Region.US_Standard.toString())) {
-            XmlWriter xml = new XmlWriter();
-            xml.start("CreateBucketConfiguration", "xmlns", Constants.XML_NAMESPACE);
-            xml.start("LocationConstraint").value(region).end();
-            xml.end();
-
-            request.setContent(new ByteArrayInputStream(xml.getBytes()));
-        }
-
-        invoke(request, voidResponseHandler, bucketName, null);
-
-        return new Bucket(bucketName);
-    }
-
-
-    /**
-     * Copied verbatim from AmazonS3Client only because it is private and we call it from our overridden getObject().
-     * TODO: remove post v1 when ViPR will return a hyphen in the ETag for multipart uploads
-     */
-    protected static void addResponseHeaderParameters(Request<?> request, ResponseHeaderOverrides responseHeaders) {
-        if ( responseHeaders != null ) {
-            if ( responseHeaders.getCacheControl() != null ) {
-                request.addParameter(ResponseHeaderOverrides.RESPONSE_HEADER_CACHE_CONTROL, responseHeaders.getCacheControl());
-            }
-            if ( responseHeaders.getContentDisposition() != null ) {
-                request.addParameter(ResponseHeaderOverrides.RESPONSE_HEADER_CONTENT_DISPOSITION,
-                        responseHeaders.getContentDisposition());
-            }
-            if ( responseHeaders.getContentEncoding() != null ) {
-                request.addParameter(ResponseHeaderOverrides.RESPONSE_HEADER_CONTENT_ENCODING,
-                        responseHeaders.getContentEncoding());
-            }
-            if ( responseHeaders.getContentLanguage() != null ) {
-                request.addParameter(ResponseHeaderOverrides.RESPONSE_HEADER_CONTENT_LANGUAGE,
-                        responseHeaders.getContentLanguage());
-            }
-            if ( responseHeaders.getContentType() != null ) {
-                request.addParameter(ResponseHeaderOverrides.RESPONSE_HEADER_CONTENT_TYPE, responseHeaders.getContentType());
-            }
-            if ( responseHeaders.getExpires() != null ) {
-                request.addParameter(ResponseHeaderOverrides.RESPONSE_HEADER_EXPIRES, responseHeaders.getExpires());
-            }
-        }
-    }
-
-    /**
-     * Copied verbatim from AmazonS3Client only because it is private and we call it from our overridden getObject().
-     * TODO: remove post v1 when ViPR will return a hyphen in the ETag for multipart uploads
-     */
-    protected static void addDateHeader(Request<?> request, String header, Date value) {
-        if (value != null) {
-            request.addHeader(header, ServiceUtils.formatRfc822Date(value));
-        }
-    }
-
-    /**
-     * Copied verbatim from AmazonS3Client only because it is private and we call it from our overridden getObject().
-     * TODO: remove post v1 when ViPR will return a hyphen in the ETag for multipart uploads
-     */
-    protected static void addStringListHeader(Request<?> request, String header, List<String> values) {
-        if (values != null && !values.isEmpty()) {
-            request.addHeader(header, ServiceUtils.join(values));
-        }
-    }
-
-    protected String join(String delimiter, List<?> values) {
-        return join(delimiter, values.toArray());
-    }
-    
-    /**
-     * ViPR-specific create bucket command.  This version of the command adds some
-     * options specific to EMC ViPR, specifically the ability to set the ViPR project ID
-     * and Object Virtual Pool ID on the new bucket.
-     * @param createBucketRequest the configuration parameters for the new bucket. 
-     */
-    public Bucket createBucket(ViPRCreateBucketRequest createBucketRequest)
-            throws AmazonClientException, AmazonServiceException {
-        assertParameterNotNull(createBucketRequest,
-                "The CreateBucketRequest parameter must be specified when creating a bucket");
-
-        String bucketName = createBucketRequest.getBucketName();
-        String region = createBucketRequest.getRegion();
-        assertParameterNotNull(bucketName,
-                "The bucket name parameter must be specified when creating a bucket");
-
-        if (bucketName != null) bucketName = bucketName.trim();
-        bucketNameUtils.validateBucketName(bucketName);
-
-        Request<ViPRCreateBucketRequest> request = createRequest(bucketName, null, createBucketRequest, HttpMethodName.PUT);
-
-        if ( createBucketRequest.getAccessControlList() != null ) {
-            addAclHeaders(request, createBucketRequest.getAccessControlList());
-        } else if ( createBucketRequest.getCannedAcl() != null ) {
-            request.addHeader(Headers.S3_CANNED_ACL, createBucketRequest.getCannedAcl().toString());
-        }
-        
-        // ViPR specific: projectId and vpoolId.
-        if(createBucketRequest.getProjectId() != null) {
-            request.addHeader(ViPRConstants.PROJECT_HEADER, createBucketRequest.getProjectId());
-        }
-        if(createBucketRequest.getVpoolId() != null) {
-            request.addHeader(ViPRConstants.VPOOL_HEADER, createBucketRequest.getVpoolId());
-        }
-
-        /*
-         * If we're talking to a region-specific endpoint other than the US, we
-         * *must* specify a location constraint. Try to derive the region from
-         * the endpoint.
-         */
-        if ( region == null ) {
-            String endpoint = this.endpoint.getHost();
-            if ( endpoint.contains("us-west-1") ) {
-                region = Region.US_West.toString();
-            } else if ( endpoint.contains("us-west-2") ) {
-                region = Region.US_West_2.toString();
-            } else if ( endpoint.contains("eu-west-1") ) {
-                region = Region.EU_Ireland.toString();
-            } else if ( endpoint.contains("ap-southeast-1") ) {
-                region = Region.AP_Singapore.toString();
-            } else if ( endpoint.contains("ap-northeast-1") ) {
-                region = Region.AP_Tokyo.toString();
-            } else if ( endpoint.contains("sa-east-1") ) {
-                region = Region.SA_SaoPaulo.toString();
-            }
         }
 
         /*
