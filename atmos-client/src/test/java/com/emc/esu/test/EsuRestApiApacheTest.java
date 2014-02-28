@@ -22,15 +22,18 @@ import java.util.Properties;
 
 import com.emc.test.util.Concurrent;
 import com.emc.test.util.ConcurrentJunitRunner;
+
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.emc.atmos.util.AtmosClientFactory;
 import com.emc.esu.api.EsuApi;
 import com.emc.esu.api.EsuException;
 import com.emc.esu.api.rest.EsuRestApiApache;
 import com.emc.vipr.services.lib.ViprConfig;
+
 import org.junit.runner.RunWith;
 
 /**
@@ -76,6 +79,7 @@ public class EsuRestApiApacheTest extends EsuApiTest {
                     port = 443;
                 }
             }
+            isVipr = AtmosClientFactory.atmosIsVipr();
         } catch(Exception e) {
             Assume.assumeNoException("Could not load Atmos configuration", e);
         }

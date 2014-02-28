@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -58,6 +59,8 @@ public abstract class EsuApiTest {
 
     protected List<Identifier> cleanup = Collections.synchronizedList( new ArrayList<Identifier>() );
     protected List<ObjectPath> cleanupDirs = Collections.synchronizedList( new ArrayList<ObjectPath>() );
+    
+    protected boolean isVipr;
 
     /**
      * Tear down after a test is run.  Cleans up objects that were created
@@ -544,6 +547,7 @@ public abstract class EsuApiTest {
      */
     @Test
     public void testVersionObject() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         MetadataList mlist = new MetadataList();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -579,6 +583,7 @@ public abstract class EsuApiTest {
      */
     @Test
     public void testListVersions() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         MetadataList mlist = new MetadataList();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -611,6 +616,7 @@ public abstract class EsuApiTest {
      */
     @Test
     public void testListVersionsLong() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         MetadataList mlist = new MetadataList();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -655,6 +661,7 @@ public abstract class EsuApiTest {
      */
     @Test
     public void testDeleteVersion() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         MetadataList mlist = new MetadataList();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -692,6 +699,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testRestoreVersion() throws UnsupportedEncodingException {
+        Assume.assumeFalse(isVipr);
         ObjectId id = this.esu.createObject( null, null, "Base Version Content".getBytes( "UTF-8" ), "text/plain" );
         Assert.assertNotNull( "null ID returned", id );
         cleanup.add( id );
@@ -1631,6 +1639,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testGetShareableUrl() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectId id = this.esu.createObject( null, null, str.getBytes( "UTF-8" ), "text/plain" );
@@ -1654,6 +1663,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testGetShareableUrlWithPath() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectPath op = new ObjectPath( "/" + rand8char() + ".txt" );
@@ -1678,6 +1688,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testExpiredSharableUrl() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectId id = this.esu.createObject( null, null,
@@ -2179,6 +2190,7 @@ public abstract class EsuApiTest {
     @Ignore("Turned off by default.")
     @Test
     public void testHardLink() throws Exception {
+        Assume.assumeFalse(isVipr);
         ObjectPath op1 = new ObjectPath("/" + rand8char() + ".tmp");
         ObjectPath op2 = new ObjectPath("/" + rand8char() + ".tmp");
 
@@ -2208,6 +2220,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testGetShareableUrlAndDisposition() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectId id = this.esu.createObject( null, null, str.getBytes( "UTF-8" ), "text/plain" );
@@ -2233,6 +2246,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testGetShareableUrlWithPathAndDisposition() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectPath op = new ObjectPath( "/" + rand8char() + ".txt" );
@@ -2259,6 +2273,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testGetShareableUrlWithPathAndUTF8Disposition() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectPath op = new ObjectPath( "/" + rand8char() + ".txt" );
@@ -2318,6 +2333,7 @@ public abstract class EsuApiTest {
 
     @Test
     public void testCrudKeys() throws Exception {
+        Assume.assumeFalse(isVipr);
         String keyPool = "Test_key-pool#@!$%^..";
         String key = "KEY_TEST";
         String content = "Hello World!";

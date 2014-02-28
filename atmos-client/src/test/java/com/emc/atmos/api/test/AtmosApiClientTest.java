@@ -66,6 +66,7 @@ public class AtmosApiClientTest {
 
     protected AtmosConfig config;
     protected AtmosApi api;
+    protected boolean isVipr = false;
 
     protected List<ObjectIdentifier> cleanup = Collections.synchronizedList( new ArrayList<ObjectIdentifier>() );
     protected List<ObjectPath> cleanupDirs = Collections.synchronizedList( new ArrayList<ObjectPath>() );
@@ -78,6 +79,7 @@ public class AtmosApiClientTest {
         config.setEnableRetry( false );
         config.setLoadBalancingAlgorithm( new StickyThreadAlgorithm() );
         api = new AtmosApiClient( config );
+        isVipr = AtmosClientFactory.atmosIsVipr();
     }
 
     @After
@@ -98,15 +100,18 @@ public class AtmosApiClientTest {
                 l4j.warn( "Could not delete test dir: ", e );
             }
         }
-        try {
-            ListAccessTokensResponse response = this.api.listAccessTokens( new ListAccessTokensRequest() );
-            if ( response.getTokens() != null ) {
-                for ( AccessToken token : response.getTokens() ) {
-                    this.api.deleteAccessToken( token.getId() );
+        
+        if(!isVipr) {
+            try {
+                ListAccessTokensResponse response = this.api.listAccessTokens( new ListAccessTokensRequest() );
+                if ( response.getTokens() != null ) {
+                    for ( AccessToken token : response.getTokens() ) {
+                        this.api.deleteAccessToken( token.getId() );
+                    }
                 }
+            } catch ( Exception e ) {
+                System.out.println( "Failed to delete access tokens: " + e.getMessage() );
             }
-        } catch ( Exception e ) {
-            System.out.println( "Failed to delete access tokens: " + e.getMessage() );
         }
     }
 
@@ -599,6 +604,7 @@ public class AtmosApiClientTest {
      */
     @Test
     public void testVersionObject() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object
         String content = "Version Test";
         CreateObjectRequest request = new CreateObjectRequest().content( content );
@@ -636,6 +642,7 @@ public class AtmosApiClientTest {
      */
     @Test
     public void testListVersions() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         CreateObjectRequest request = new CreateObjectRequest();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -677,6 +684,7 @@ public class AtmosApiClientTest {
      */
     @Test
     public void testListVersionsLong() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         CreateObjectRequest request = new CreateObjectRequest();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -721,6 +729,7 @@ public class AtmosApiClientTest {
      */
     @Test
     public void testDeleteVersion() {
+        Assume.assumeFalse(isVipr);
         // Create an object
         CreateObjectRequest request = new CreateObjectRequest();
         Metadata listable = new Metadata( "listable", "foo", true );
@@ -756,6 +765,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testRestoreVersion() throws IOException {
+        Assume.assumeFalse(isVipr);
         ObjectId id = this.api.createObject( "Base Version Content".getBytes( "UTF-8" ), "text/plain" );
         Assert.assertNotNull( "null ID returned", id );
         cleanup.add( id );
@@ -1230,6 +1240,7 @@ public class AtmosApiClientTest {
         for ( DirectoryEntry de : dirList ) {
             if ( new ObjectPath( dirPath, de.getFilename() ).equals( op ) ) {
                 // Check the metadata
+                Assert.assertNotNull("missing metadata 'listable'", de.getUserMetadataMap().get( "listable" ));
                 Assert.assertEquals( "Wrong value on metadata",
                                      de.getUserMetadataMap().get( "listable" ).getValue(), "foo" );
 
@@ -1277,8 +1288,10 @@ public class AtmosApiClientTest {
         for ( DirectoryEntry de : dirList ) {
             if ( new ObjectPath( dirPath, de.getFilename() ).equals( op ) ) {
                 // Check the metadata
+                Assert.assertNotNull("Missing metadata 'listable'", 
+                        de.getUserMetadataMap().get( "listable" ));
                 Assert.assertEquals( "Wrong value on metadata",
-                                     de.getUserMetadataMap().get( "listable" ).getValue(), "foo" );
+                                         de.getUserMetadataMap().get( "listable" ).getValue(), "foo" );
                 // Other metadata should not be present
                 Assert.assertNull( "unlistable should be missing",
                                    de.getUserMetadataMap().get( "unlistable" ) );
@@ -1467,6 +1480,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testGetShareableUrl() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectId id = this.api.createObject( str.getBytes( "UTF-8" ), "text/plain" );
@@ -1490,6 +1504,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testGetShareableUrlWithPath() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectPath op = new ObjectPath( "/" + rand8char() + ".txt" );
@@ -1514,6 +1529,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testExpiredSharableUrl() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectId id = this.api.createObject( str.getBytes( "UTF-8" ), "text/plain" );
@@ -1980,6 +1996,7 @@ public class AtmosApiClientTest {
 
         // Check policyname
         Map<String,Metadata> sysmeta = this.api.getSystemMetadata(id, "policyname");
+        Assert.assertNotNull("Missing system metadata 'policyname'", sysmeta.get("policyname") );
         Assume.assumeTrue("policyname != retaindelete", "retaindelete".equals(sysmeta.get("policyname").getValue()));
 
         // Get the object info
@@ -2031,6 +2048,10 @@ public class AtmosApiClientTest {
 
         // Read and validate the metadata
         Map<String, Metadata> metaMap = this.api.getObjectMetadata( dir ).getMetadata();
+        Assert.assertNotNull("Missing metadata 'listable'", metaMap.get( "listable" ));
+        Assert.assertNotNull("Missing metadata 'listable2'", metaMap.get( "listable2" ));
+        Assert.assertNotNull("Missing metadata 'unlistable'", metaMap.get( "unlistable" ));
+        Assert.assertNotNull("Missing metadata 'unlistable2'", metaMap.get( "unlistable2" ));
         Assert.assertEquals( "value of 'listable' wrong", "foo", metaMap.get( "listable" ).getValue() );
         Assert.assertEquals( "value of 'listable2' wrong", "foo2 foo2", metaMap.get( "listable2" ).getValue() );
         Assert.assertEquals( "value of 'unlistable' wrong", "bar", metaMap.get( "unlistable" ).getValue() );
@@ -2078,6 +2099,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testGetShareableUrlAndDisposition() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectId id = this.api.createObject( str.getBytes( "UTF-8" ), "text/plain" );
@@ -2103,6 +2125,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testGetShareableUrlWithPathAndDisposition() throws Exception {
+        Assume.assumeFalse(isVipr);
         // Create an object with content.
         String str = "Four score and twenty years ago";
         ObjectPath op = new ObjectPath( "/" + rand8char() + ".txt" );
@@ -2130,6 +2153,7 @@ public class AtmosApiClientTest {
     @Test
     public void testGetShareableUrlWithPathAndUTF8Disposition() throws Exception {
         // Create an object with content.
+        Assume.assumeFalse(isVipr);
         String str = "Four score and twenty years ago";
         ObjectPath op = new ObjectPath( "/" + rand8char() + ".txt" );
         ObjectId id = this.api.createObject( op, str.getBytes( "UTF-8" ), "text/plain" );
@@ -2192,6 +2216,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testCrudKeys() throws Exception {
+        Assume.assumeFalse(isVipr);
         ObjectKey key = new ObjectKey( "Test_key-pool#@!$%^..", "KEY_TEST" );
         String content = "Hello World!";
 
@@ -2322,6 +2347,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testServerGeneratedChecksum() throws Exception {
+        Assume.assumeFalse(isVipr);
         byte[] data = "hello".getBytes( "UTF-8" );
 
         // generate our own checksum
@@ -2350,6 +2376,7 @@ public class AtmosApiClientTest {
     @Ignore("Blocked by Bug 30073")
     @Test
     public void testReadAccessToken() throws Exception {
+        Assume.assumeFalse(isVipr);
         ObjectPath parentDir = createTestDir("ReadAccessToken");
         ObjectPath path = new ObjectPath( parentDir, "read_token \n,<x> test" );
         ObjectId id = api.createObject( path, "hello", "text/plain" );
@@ -2400,6 +2427,7 @@ public class AtmosApiClientTest {
     @Ignore("Blocked by Bug 30073")
     @Test
     public void testWriteAccessToken() throws Exception {
+        Assume.assumeFalse(isVipr);
         ObjectPath parentDir = createTestDir("WriteAccessToken");
         ObjectPath path = new ObjectPath( parentDir, "write_token_test" );
 
@@ -2486,6 +2514,7 @@ public class AtmosApiClientTest {
     @Ignore("Blocked by Bug 30073")
     @Test
     public void testListAccessTokens() throws Exception {
+        Assume.assumeFalse(isVipr);
         ObjectPath parentDir = createTestDir("ListAccessTokens");
         ObjectPath path = new ObjectPath( parentDir, "read_token_test" );
         ObjectId id = api.createObject( path, "hello", "text/plain" );
@@ -2529,6 +2558,7 @@ public class AtmosApiClientTest {
 
     @Test
     public void testDisableSslValidation() throws Exception {
+        Assume.assumeFalse(isVipr);
         config.setDisableSslValidation( true );
         api = new AtmosApiClient( config );
         List<URI> sslUris = new ArrayList<URI>();

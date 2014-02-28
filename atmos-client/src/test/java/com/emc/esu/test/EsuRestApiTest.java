@@ -22,17 +22,20 @@ import java.util.Properties;
 
 import com.emc.test.util.Concurrent;
 import com.emc.test.util.ConcurrentJunitRunner;
+
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.emc.atmos.util.AtmosClientFactory;
 import com.emc.esu.api.EsuApi;
 import com.emc.esu.api.EsuException;
 import com.emc.esu.api.rest.EsuRestApi;
 import com.emc.esu.api.rest.LBEsuRestApi;
 import com.emc.esu.sysmgmt.SysMgmtApi;
 import com.emc.vipr.services.lib.ViprConfig;
+
 import org.junit.runner.RunWith;
 
 @SuppressWarnings("deprecation")
@@ -81,6 +84,7 @@ public class EsuRestApiTest extends EsuApiTest {
                     port = 443;
                 }
             }
+            isVipr = AtmosClientFactory.atmosIsVipr();
             
             // See if there's more than one:
             String[] endpoints = ViprConfig.getPropertyNotEmpty(p, ViprConfig.PROP_ATMOS_ENDPOINTS).split(",");

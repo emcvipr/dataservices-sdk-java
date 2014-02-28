@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.emc.vipr</groupId>
     <artifactId>dataservices</artifactId>
-    <version>1.1</version>
+    <version>1.1.1</version>
   </parent>
   <artifactId>s3-sample</artifactId>
   <packaging>jar</packaging>

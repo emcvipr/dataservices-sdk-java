@@ -20,7 +20,9 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
 import com.emc.test.util.Concurrent;
 import com.emc.test.util.ConcurrentJunitRunner;
+import com.emc.vipr.services.lib.ViprConfig;
 import com.emc.vipr.services.s3.model.*;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assume;
@@ -45,11 +47,16 @@ public class FileAccessTest {
     private static Log log = LogFactory.getLog(FileAccessTest.class);
 
     private ViPRS3Client s3;
+    private boolean fileAccessTestsEnabled = true;
 
     @Before
     public void setUp() throws Exception {
         s3 = S3ClientFactory.getS3Client();
         Assume.assumeTrue("Could not configure S3 connection", s3 != null);
+        if("false".equals(ViprConfig.getProperties().getProperty(
+                ViprConfig.PROP_FILE_ACCESS_TESTS_ENABLED, "true"))) {
+            fileAccessTestsEnabled = false;
+        }
     }
 
     protected void createBucket(String bucketName) {
@@ -65,7 +72,8 @@ public class FileAccessTest {
     @Ignore // blocked by CQ608849
     @Test
     public void testBasicReadOnly() throws Exception {
-        String bucketName = "test.vipr-basic-read-only";
+        Assume.assumeTrue(fileAccessTestsEnabled);
+        String bucketName = "test.vipr-basic-read-only." + (System.currentTimeMillis()/1000);
         String key = "basic-read-only.txt";
         String content = "Hello read-only!";
 
@@ -142,7 +150,8 @@ public class FileAccessTest {
 
     @Test
     public void testReadWriteWindow() throws Exception {
-        String bucketName = "test.vipr-fileaccess-window";
+        Assume.assumeTrue(fileAccessTestsEnabled);
+        String bucketName = "test.vipr-fileaccess-window." + (System.currentTimeMillis()/1000);
         String key1 = "test1.txt";
         String key2 = "test2.txt";
         String key3 = "test3.txt";
@@ -344,7 +353,8 @@ public class FileAccessTest {
     // XXX: unfortunately there is currently no good way to automate this test
     @Test
     public void testPreserveIngestPaths() throws Exception {
-        String bucketName = "test.ingest";
+        Assume.assumeTrue(fileAccessTestsEnabled);
+        String bucketName = "test.ingest." + (System.currentTimeMillis()/1000);
         String key1 = "test1.txt";
         String key2 = "test2.txt";
         String key3 = "test3.txt";
@@ -489,6 +499,19 @@ public class FileAccessTest {
     }
 
     protected void cleanBucket(String bucketName) {
+        try {
+            SetBucketFileAccessModeRequest requestDisabled = new SetBucketFileAccessModeRequest();
+            requestDisabled.setBucketName(bucketName);
+            requestDisabled.setAccessMode(ViPRConstants.FileAccessMode.disabled);
+
+            // change mode to disabled
+            s3.setBucketFileAccessMode(requestDisabled);
+
+            waitForTransition(bucketName, ViPRConstants.FileAccessMode.disabled, 90);
+
+        } catch(Exception e) {
+            log.warn(String.format("Could not disable file access for bucket %s", bucketName), e);            
+        }
         try {
             for (S3ObjectSummary summary : s3.listObjects(bucketName).getObjectSummaries()) {
                 s3.deleteObject(bucketName, summary.getKey());

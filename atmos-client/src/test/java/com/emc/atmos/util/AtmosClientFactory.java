@@ -77,5 +77,17 @@ public class AtmosClientFactory {
            return null;
         }
     }
+    
+    public static boolean atmosIsVipr() {
+        try {
+            Properties props = ViprConfig.getProperties();
+            
+            return Boolean.parseBoolean(props.getProperty(ViprConfig.PROP_ATMOS_IS_VIPR, "false"));
+            
+        } catch (IOException e) {
+            l4j.info("Could not load properties file: " + e);
+            return false;
+        } 
+    }
 
 }

@@ -3,10 +3,15 @@
   <parent>
     <groupId>com.emc.vipr</groupId>
     <artifactId>dataservices</artifactId>
-    <version>1.1</version>
+    <version>1.1.1</version>
   </parent>
   <artifactId>s3-client</artifactId>
   <packaging>jar</packaging>
+
+  <properties>
+    <main.stage>${project.basedir}/../target/staging</main.stage>
+    <main.version>${project.parent.version}</main.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -17,7 +22,7 @@
     <dependency>
     	<groupId>com.emc.vipr</groupId>
     	<artifactId>dataservices-common</artifactId>
-    	<version>1.1</version>
+    	<version>1.1.1</version>
     	<scope>test</scope>
     </dependency>
   </dependencies>

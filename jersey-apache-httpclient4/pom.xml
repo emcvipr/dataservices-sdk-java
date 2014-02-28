@@ -3,10 +3,16 @@
   <parent>
     <groupId>com.emc.vipr</groupId>
     <artifactId>dataservices</artifactId>
-    <version>1.1</version>
+    <version>1.1.1</version>
   </parent>
   <artifactId>jersey-apache-httpclient4</artifactId>
   <version>1.18-CUSTOM</version>
+
+  <properties>
+    <main.stage>${project.basedir}/../target/staging</main.stage>
+    <main.version>${project.parent.version}</main.version>
+  </properties>
+
   <dependencies>
   	<dependency>
   		<groupId>com.sun.jersey</groupId>
@@ -26,15 +32,4 @@
   </dependencies>
   <name>Custom jersey-apache-httpclient4</name>
   <description>This is a custom build of the httpclient4 provider for jersey that supports preemptive proxy authorization.</description>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
