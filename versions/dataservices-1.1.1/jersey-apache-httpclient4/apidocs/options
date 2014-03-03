@@ -1,0 +1,32 @@
+-classpath
+'/home/stu/workspace/vipr-data-services-sdk-java/jersey-apache-httpclient4/target/classes:/home/stu/.m2/repository/com/sun/jersey/jersey-core/1.18/jersey-core-1.18.jar:/home/stu/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/home/stu/.m2/repository/org/apache/httpcomponents/httpclient/4.2.2/httpclient-4.2.2.jar:/home/stu/.m2/repository/org/apache/httpcomponents/httpcore/4.2.2/httpcore-4.2.2.jar:/home/stu/.m2/repository/com/sun/jersey/jersey-client/1.18/jersey-client-1.18.jar:/home/stu/.m2/repository/commons-codec/commons-codec/1.6/commons-codec-1.6.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'/home/stu/workspace/vipr-data-services-sdk-java/jersey-apache-httpclient4/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2014. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/home/stu/workspace/vipr-data-services-sdk-java/jersey-apache-httpclient4/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Custom jersey-apache-httpclient4 1.18-CUSTOM API'
+-link
+'http://java.sun.com/j2se/1.6.0/docs/api'
+-link
+'http://java.sun.com/javase/6/docs/api'
+-linkoffline
+'http://emcvipr.github.io/dataservices-sdk-java/s3-client/apidocs' '/home/stu/workspace/vipr-data-services-sdk-java/s3-client/target/site/apidocs'
+-linkoffline
+'http://emcvipr.github.io/dataservices-sdk-java/vipr-object-transformations/apidocs' '/home/stu/workspace/vipr-data-services-sdk-java/vipr-object-transformations/target/site/apidocs'
+-linkoffline
+'http://emcvipr.github.io/dataservices-sdk-java/atmos-client/apidocs' '/home/stu/workspace/vipr-data-services-sdk-java/atmos-client/target/site/apidocs'
+-use
+-version
+-windowtitle
+'Custom jersey-apache-httpclient4 1.18-CUSTOM API'

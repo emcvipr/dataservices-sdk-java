@@ -1,0 +1,32 @@
+-classpath
+'/home/stu/workspace/vipr-data-services-sdk-java/vipr-object-transformations/target/classes:/home/stu/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/home/stu/.m2/repository/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar:/home/stu/.m2/repository/org/b1/pack/lzma-sdk-4j/9.22.0/lzma-sdk-4j-9.22.0.jar:/home/stu/.m2/repository/commons-codec/commons-codec/1.3/commons-codec-1.3.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'/home/stu/workspace/vipr-data-services-sdk-java/vipr-object-transformations/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2014. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/home/stu/workspace/vipr-data-services-sdk-java/vipr-object-transformations/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'ViPR Object Transformations 1.1.1 API'
+-link
+'http://java.sun.com/j2se/1.6.0/docs/api'
+-link
+'http://java.sun.com/javase/6/docs/api'
+-linkoffline
+'http://emcvipr.github.io/dataservices-sdk-java/s3-client/apidocs' '/home/stu/workspace/vipr-data-services-sdk-java/s3-client/target/site/apidocs'
+-linkoffline
+'http://emcvipr.github.io/dataservices-sdk-java/jersey-apache-httpclient4/apidocs' '/home/stu/workspace/vipr-data-services-sdk-java/jersey-apache-httpclient4/target/site/apidocs'
+-linkoffline
+'http://emcvipr.github.io/dataservices-sdk-java/atmos-client/apidocs' '/home/stu/workspace/vipr-data-services-sdk-java/atmos-client/target/site/apidocs'
+-use
+-version
+-windowtitle
+'ViPR Object Transformations 1.1.1 API'
