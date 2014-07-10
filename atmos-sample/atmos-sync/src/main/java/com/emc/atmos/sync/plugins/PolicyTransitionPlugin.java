@@ -16,11 +16,14 @@ package com.emc.atmos.sync.plugins;
 
 import com.emc.atmos.api.AtmosApi;
 import com.emc.atmos.api.ObjectIdentifier;
+import com.emc.atmos.api.ObjectPath;
 import com.emc.atmos.api.bean.Metadata;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.util.AtmosUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.apache.log4j.LogMF;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -35,7 +38,7 @@ public class PolicyTransitionPlugin extends SyncPlugin {
     private static final Logger l4j = Logger.getLogger( PolicyTransitionPlugin.class );
 
     public static final String TARGET_POLICY_OPTION = "target-policy";
-    public static final String TARGET_POLICY_DESC = "The target policy in which objects should be placed. If specified, the system metadata for each object is checked to verify the object is not already in the target policy. If so, it is left untouched";
+    public static final String TARGET_POLICY_DESC = "The target policy in which objects should be placed. If specified, the system metadata for each object is checked to verify the object is not already in the target policy. If so, it is left untouched and logged as INFO";
     public static final String TARGET_POLICY_ARG_NAME = "policy-name";
 
     public static final String META_TRIGGER_OPTION = "meta-trigger";
@@ -45,36 +48,55 @@ public class PolicyTransitionPlugin extends SyncPlugin {
     public static final String REMOVE_META_OPTION = "remove-meta";
     public static final String REMOVE_META_DESC = "If enabled, removes the trigger metadata after it has been set. Use this if the trigger metadata serves no other purpose than to change the policy";
 
+    public static final String DISABLE_RETENTION_OPTION = "disable-retention";
+    public static final String DISABLE_RETENTION_DESC = "If objects are currently in retention, this will *attempt* to disable it to allow the policy transition (otherwise it is impossible). Note: this will only work in non-compliant subtenants";
+
     public static final String KEEP_EXPIRATION_OPTION = "keep-expiration";
     public static final String KEEP_EXPIRATION_DESC = "When a new policy is applied, the expiration date may be changed. This option will pull the expiration date before the update and attempt to re-set the expiration after the update (via user.maui.expirationEnd)";
 
     public static final String KEEP_RETENTION_OPTION = "keep-retention";
     public static final String KEEP_RETENTION_DESC = "Same as keep-expiration except for retention end date";
 
+    public static final String FAST_OPTION = "fast";
+    public static final String FAST_DESC = "Skip all checking and verification and make only set-metadata (and delete-metadata if removing) calls";
+
+    public static final String VERIFY_POLICY_OPTION = "verify-policy";
+    public static final String VERIFY_POLICY_DESC = "Makes an additional call to verify the policy assignment for each object and logs success as INFO, failure as WARN. Note this does not retry if the policy assignment was unsuccessful";
+
     // timed operations
     private static final String OPERATION_DISABLE_RETENTION = "AtmosDisableRetention";
     private static final String OPERATION_SET_USER_META = "AtmosSetUserMeta";
     private static final String OPERATION_DELETE_USER_META = "AtmosDeleteUserMeta";
     private static final String OPERATION_SET_RETENTION_EXPIRATION = "AtmosSetRetentionExpiration";
+    private static final String OPERATION_VERIFY_POLICY = "AtmosVerifyPolicy";
     private static final String OPERATION_TOTAL = "TotalTime";
 
     private String targetPolicy;
     private Metadata triggerMetadata;
     private boolean removeMeta;
+    private boolean disableRetention;
     private boolean keepExpiration;
     private boolean keepRetention;
     private AtmosSource source;
+    private boolean fast;
+    private boolean verifyPolicy;
 
     @Override
     public void filter( final SyncObject obj ) {
         SourceAtmosId idAnn = (SourceAtmosId) obj.getAnnotation( SourceAtmosId.class );
         final ObjectIdentifier id = (idAnn.getId() != null) ? idAnn.getId() : idAnn.getPath();
 
+        // ignore directories
+        if (id instanceof ObjectPath && ((ObjectPath) id).isDirectory()) {
+            LogMF.debug( l4j, "Object {0} is a directory; ignoring", id );
+            return;
+        }
+
         // ignore the object if it's already in the target policy
-        if ( targetPolicy != null ) {
+        if ( targetPolicy != null && !fast ) {
             Metadata policyMeta = obj.getMetadata().getSystemMetadata().get( "policyname" );
             if ( policyMeta != null && targetPolicy.equals( policyMeta.getValue() ) ) {
-                l4j.debug( "Object " + id + " is already in target policy " + targetPolicy + "; ignoring" );
+                l4j.info( "Object " + id + " is already in target policy " + targetPolicy + "; ignoring" );
                 return;
             }
         }
@@ -82,11 +104,11 @@ public class PolicyTransitionPlugin extends SyncPlugin {
         final AtmosApi atmosApi = source.getAtmos();
         timeOperationStart( OPERATION_TOTAL );
         try {
-            obj.getMetadata(); // this will lazy-load metadata and object-info
+            if ( !fast ) obj.getMetadata(); // this will lazy-load metadata and object-info
 
             // check if the object is already in retention. if so, we'll need to disable retention before we can change
             // the metadata
-            if ( obj.getMetadata().isRetentionEnabled() ) {
+            if ( disableRetention && obj.getMetadata().isRetentionEnabled() ) {
                 time( new Timeable<Void>() {
                     @Override
                     public Void call() {
@@ -105,16 +127,31 @@ public class PolicyTransitionPlugin extends SyncPlugin {
                 }
             }, OPERATION_SET_USER_META );
 
-            // remove metadata after transition
-            // TODO: figure out why this doesn't work when transitioning to a retention policy
-            if ( removeMeta ) {
-                time( new Timeable<Object>() {
-                    @Override
-                    public Object call() {
-                        atmosApi.deleteUserMetadata( id, triggerMetadata.getName() );
-                        return null;
-                    }
-                }, OPERATION_DELETE_USER_META );
+            // verify policy assignment
+            if ( verifyPolicy ) {
+                int maxTries = 3, thisTry = 1;
+                Metadata policyMeta = null;
+                boolean success = false;
+                try {
+                    do {
+                        // if not immediately set, give the policy trigger some time to take effect
+                        if (thisTry > 1) Thread.sleep(300);
+                        policyMeta = time(new Timeable<Metadata>() {
+                            @Override
+                            public Metadata call() {
+                                return atmosApi.getSystemMetadata(id, "policyname").get("policyname");
+                            }
+                        }, OPERATION_VERIFY_POLICY);
+                        success = policyMeta != null && targetPolicy.equals(policyMeta.getValue());
+                    } while (!success && ++thisTry <= maxTries);
+                } catch (InterruptedException e) {
+                    l4j.warn("Interrupted while waiting to retry policy verification");
+                }
+                if (success) {
+                    LogMF.info(l4j, "Object {0} successfully transitioned to target policy {1}", id, targetPolicy);
+                } else {
+                    LogMF.warn(l4j, "! Object {0} transition unsuccessful ({1})", id, policyMeta);
+                }
             }
 
             // if keeping retention or deletion, re-set those to the old values
@@ -134,6 +171,17 @@ public class PolicyTransitionPlugin extends SyncPlugin {
                         return null;
                     }
                 }, OPERATION_SET_RETENTION_EXPIRATION );
+            }
+
+            // remove metadata after transition
+            if ( removeMeta ) {
+                time( new Timeable<Object>() {
+                    @Override
+                    public Object call() {
+                        atmosApi.deleteUserMetadata( id, triggerMetadata.getName() );
+                        return null;
+                    }
+                }, OPERATION_DELETE_USER_META );
             }
 
             getNext().filter( obj );
@@ -158,10 +206,16 @@ public class PolicyTransitionPlugin extends SyncPlugin {
                                      .hasArg().withArgName( META_TRIGGER_ARG_NAME ).create() );
         opts.addOption( OptionBuilder.withDescription( REMOVE_META_DESC )
                                      .withLongOpt( REMOVE_META_OPTION ).create() );
+        opts.addOption( OptionBuilder.withDescription( DISABLE_RETENTION_DESC )
+                                     .withLongOpt( DISABLE_RETENTION_OPTION ).create() );
         opts.addOption( OptionBuilder.withDescription( KEEP_EXPIRATION_DESC )
                                      .withLongOpt( KEEP_EXPIRATION_OPTION ).create() );
         opts.addOption( OptionBuilder.withDescription( KEEP_RETENTION_DESC )
                                      .withLongOpt( KEEP_RETENTION_OPTION ).create() );
+        opts.addOption( OptionBuilder.withDescription( FAST_DESC )
+                                     .withLongOpt( FAST_OPTION ).create() );
+        opts.addOption( OptionBuilder.withDescription( VERIFY_POLICY_DESC )
+                                     .withLongOpt( VERIFY_POLICY_OPTION ).create() );
 
         return opts;
     }
@@ -185,8 +239,17 @@ public class PolicyTransitionPlugin extends SyncPlugin {
 
         removeMeta = line.hasOption( REMOVE_META_OPTION );
 
+        disableRetention = line.hasOption( DISABLE_RETENTION_OPTION );
         keepExpiration = line.hasOption( KEEP_EXPIRATION_OPTION );
         keepRetention = line.hasOption( KEEP_RETENTION_OPTION );
+        verifyPolicy = line.hasOption( VERIFY_POLICY_OPTION );
+
+        fast = line.hasOption( FAST_OPTION );
+        if ( fast && (disableRetention || keepExpiration || keepRetention || verifyPolicy) )
+            throw new IllegalArgumentException( "disable-retention, keep-retention, keep-expiration and verify-policy are not possible in fast mode" );
+
+        if ( verifyPolicy && targetPolicy == null )
+            throw new IllegalArgumentException( "you must specify a target-policy to verify" );
 
         return true;
     }
@@ -278,5 +341,28 @@ public class PolicyTransitionPlugin extends SyncPlugin {
      */
     public void setKeepRetention( boolean keepRetention ) {
         this.keepRetention = keepRetention;
+    }
+
+    public boolean isFast() {
+        return fast;
+    }
+
+    /**
+     * If true, skips all checking and validation and makes only set-metadata (and delete-metadata if removing) calls.
+     */
+    public void setFast(boolean fast) {
+        this.fast = fast;
+    }
+
+    /**
+     * If true, makes an additional call to verify the policy assignment for each object and logs the result at INFO
+     * level. Note this does not retry if the policy assignment was unsuccessful.
+     */
+    public boolean isVerifyPolicy() {
+        return verifyPolicy;
+    }
+
+    public void setVerifyPolicy(boolean verifyPolicy) {
+        this.verifyPolicy = verifyPolicy;
     }
 }

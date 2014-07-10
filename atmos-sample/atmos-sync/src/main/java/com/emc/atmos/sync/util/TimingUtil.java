@@ -15,11 +15,13 @@
 package com.emc.atmos.sync.util;
 
 import com.emc.atmos.sync.AtmosSync2;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.plugins.SourcePlugin;
 import com.emc.atmos.sync.plugins.SyncPlugin;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 
 public final class TimingUtil {
     private static final Logger log = Logger.getLogger( TimingUtil.class );
@@ -48,6 +50,30 @@ public final class TimingUtil {
 
     public static void failOperation( SyncPlugin plugin, String name ) {
         getTimings( plugin ).failOperation( plugin.getName() + "::" + name );
+    }
+
+    public static <T> T time(SyncPlugin plugin, String name, Timeable<T> timeable) {
+        startOperation(plugin, name);
+        try {
+            T t = timeable.call();
+            completeOperation(plugin, name);
+            return t;
+        } catch (RuntimeException e) {
+            failOperation(plugin, name);
+            throw e;
+        }
+    }
+
+    public static <T> T time(SyncPlugin plugin, String name, Callable<T> timeable) throws Exception {
+        startOperation(plugin, name);
+        try {
+            T t = timeable.call();
+            completeOperation(plugin, name);
+            return t;
+        } catch (Exception e) {
+            failOperation(plugin, name);
+            throw e;
+        }
     }
 
     public static void logTimings( SourcePlugin source ) {

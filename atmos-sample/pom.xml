@@ -3,20 +3,21 @@
   <parent>
     <groupId>com.emc.vipr</groupId>
     <artifactId>dataservices</artifactId>
-    <version>1.1.1</version>
+    <version>2.0</version>
   </parent>
   <artifactId>atmos-sample</artifactId>
   <packaging>pom</packaging>
   <modules>
-  	<module>atmos-sync</module>
-  	<module>acdp-provisioning-tool</module>
-  	<module>acdp-report-generator</module>
-  	<module>atmos-cleanup</module>
-  	<module>atmos-threaded-download</module>
-  	<module>directory-monitor</module>
-  	<module>orphaned-user-tool</module>
+    <module>atmos-sync</module>
+    <module>acdp-provisioning-tool</module>
+    <module>acdp-report-generator</module>
+    <module>atmos-cleanup</module>
+    <module>atmos-threaded-download</module>
+    <module>directory-monitor</module>
+    <module>orphaned-user-tool</module>
+    <module>list-bucket</module>
   </modules>
-  <version>2.1.6</version>
+  <version>2.2</version>
 
   <name>Sample applications and tools using atmos-client</name>
 
@@ -45,7 +46,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>2.1</version>
+            <version>2.2</version>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -54,6 +55,18 @@
                 </goals>
               </execution>
             </executions>
+            <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </plugin>
           <plugin> <!-- need this here to make sure assembly runs after shade -->
             <artifactId>maven-assembly-plugin</artifactId>

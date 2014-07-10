@@ -48,6 +48,8 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -2755,6 +2757,40 @@ public class AtmosApiClientTest {
             if (oldProxyHost != null) System.setProperty("http.proxyHost", oldProxyHost);
             if (oldProxyPort != null) System.setProperty("http.proxyPort", oldProxyPort);
         }
+    }
+
+    @Test
+    public void testRetention() throws Exception {
+        Metadata retention = new Metadata("retentionperiod", "1year", false);
+        CreateObjectRequest request = new CreateObjectRequest().content(null).userMetadata(retention);
+        ObjectId oid = api.createObject(request.contentType("text/plain")).getObjectId();
+        cleanup.add(oid);
+
+        Thread.sleep(2000);
+
+        // make sure retention is enabled
+        ObjectInfo info = api.getObjectInfo(oid);
+        Assume.assumeTrue(info.getRetention().isEnabled());
+        Calendar newEnd = Calendar.getInstance();
+        newEnd.setTime(info.getRetainedUntil());
+
+        DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        String retentionEnd = "user.maui.retentionEnd";
+
+        newEnd.set(Calendar.HOUR, 0);
+        newEnd.set(Calendar.MINUTE, 0);
+        newEnd.set(Calendar.SECOND, 0);
+        newEnd.set(Calendar.MILLISECOND, 0);
+        newEnd.add(Calendar.DATE, -1);
+        try {
+            api.setUserMetadata(oid, new Metadata(retentionEnd, iso8601Format.format(newEnd.getTime()), false));
+            Assert.fail("should not be able to shorten retention period");
+        } catch (AtmosException e) {
+            Assert.assertEquals("Wrong error code", 1002, e.getErrorCode());
+        }
+
+        // disable retention so we can delete (won't work on compliant subtenants!)
+        api.setUserMetadata(oid, new Metadata("user.maui.retentionEnable", "false", false));
     }
 
     protected String rand8char() {

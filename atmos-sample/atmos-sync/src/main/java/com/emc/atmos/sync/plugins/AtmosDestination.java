@@ -22,6 +22,7 @@ import com.emc.atmos.api.bean.ServiceInformation;
 import com.emc.atmos.api.jersey.AtmosApiClient;
 import com.emc.atmos.api.request.CreateObjectRequest;
 import com.emc.atmos.api.request.UpdateObjectRequest;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.util.AtmosUtil;
 import com.emc.atmos.sync.util.Iso8601Util;
 import org.apache.commons.cli.CommandLine;
@@ -48,7 +49,7 @@ public class AtmosDestination extends DestinationPlugin implements InitializingB
 	/**
 	 * This pattern is used to activate this plugin.
 	 */
-	public static final String URI_PATTERN = "^(http|https)://([a-zA-Z0-9/\\-]+):([a-zA-Z0-9\\+/=]+)@([^/]*?)(:[0-9]+)?(?:/)?$";
+	public static final String URI_PATTERN = "^(http|https)://([a-zA-Z0-9/\\-@_\\.]+):([a-zA-Z0-9\\+/=]+)@([^/]*?)(:[0-9]+)?(?:/)?$";
 
 	public static final String DEST_NAMESPACE_OPTION = "dest-namespace";
 	public static final String DEST_NAMESPACE_DESC = "The destination within the Atmos namespace.  Note that a directory must end with a trailing slash (e.g. /dir1/dir2/) otherwise it will be interpreted as a single file (only useful for transferring a single file).";
@@ -97,6 +98,12 @@ public class AtmosDestination extends DestinationPlugin implements InitializingB
 	 */
 	@Override
 	public void filter(final SyncObject obj) {
+        // skip the root namespace since it obviously exists
+        if ("/".equals(destNamespace + obj.getRelativePath())) {
+            l4j.debug("Destination namespace is root");
+            return;
+        }
+
         timeOperationStart(OPERATION_TOTAL);
 		try {
             // some sync objects lazy-load their metadata (i.e. AtmosSyncObject)
@@ -273,9 +280,9 @@ public class AtmosDestination extends DestinationPlugin implements InitializingB
 				try {
 					ObjectId id = null;
 					// Check and see if a destination ID was alredy computed
-					Set<ObjectAnnotation> anns = obj.getAnnotations(DestinationAtmosId.class);
-					if(anns.size()>0) {
-						id = ((DestinationAtmosId)anns.iterator().next()).getId();
+					DestinationAtmosId ann = obj.getAnnotation(DestinationAtmosId.class);
+					if(ann != null) {
+						id = ann.getId();
 					}
 
 					if(id != null) {
@@ -560,7 +567,7 @@ public class AtmosDestination extends DestinationPlugin implements InitializingB
                 final List<Metadata> retExpList = AtmosUtil.getExpirationMetadataForUpdate( obj.getMetadata() );
                 retExpList.addAll( AtmosUtil.getRetentionMetadataForUpdate( obj.getMetadata() ) );
                 if (retExpList.size() > 0) {
-                    time(new SyncPlugin.Timeable<Void>() {
+                    time(new Timeable<Void>() {
                         @Override
                         public Void call() {
                             atmos.setUserMetadata( destId, retExpList.toArray( new Metadata[retExpList.size()] ) );

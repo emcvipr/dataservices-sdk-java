@@ -17,6 +17,7 @@ package com.emc.vipr.services.s3;
 import com.amazonaws.util.StringInputStream;
 import com.emc.vipr.services.s3.model.FileAccessObject;
 import com.emc.vipr.services.s3.model.GetFileAccessResult;
+import com.emc.vipr.services.s3.model.ListDataNodesResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,5 +62,25 @@ public class ViPRResponsesSaxParserTest {
         Assert.assertEquals("wrong object export", "nfs://blahblah:/blah", object.getDeviceExport());
         Assert.assertEquals("wrong object relative path", "blah", object.getRelativePath());
         Assert.assertEquals("wrong object owner", "some_girl", object.getOwner());
+    }
+
+    @Test
+    public void testDataNodesResult() throws Exception {
+        String rawXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+                "        <ListDataNode xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\n" +
+                "            <DataNodes> 10.247.102.239</DataNodes>\n" +
+                "            <DataNodes>10.247.102.240</DataNodes>\n" +
+                "            <DataNodes>10.247.102.241 </DataNodes>\n" +
+                "            <VersionInfo>vipr-2.0.0.0.r2b3e482</VersionInfo>\n" +
+                "        </ListDataNode>";
+
+        ListDataNodesResult result = new ViPRResponsesSaxParser().parseListDataNodeResult(new StringInputStream(rawXml)).getResult();
+
+        Assert.assertNotNull("result is null", result);
+        Assert.assertEquals("wrong version", "vipr-2.0.0.0.r2b3e482", result.getVersion());
+        Assert.assertEquals("wrong number of hosts", 3, result.getHosts().size());
+        Assert.assertEquals("wrong 1st host", "10.247.102.239", result.getHosts().get(0));
+        Assert.assertEquals("wrong 2nd host", "10.247.102.240", result.getHosts().get(1));
+        Assert.assertEquals("wrong 3rd host", "10.247.102.241", result.getHosts().get(2));
     }
 }

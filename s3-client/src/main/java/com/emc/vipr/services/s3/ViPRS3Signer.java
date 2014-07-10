@@ -80,7 +80,8 @@ public class ViPRS3Signer extends S3Signer {
             ResponseHeaderOverrides.RESPONSE_HEADER_CONTENT_TYPE,
             ResponseHeaderOverrides.RESPONSE_HEADER_EXPIRES,
             ViPRConstants.ACCESS_MODE_PARAMETER,
-            ViPRConstants.FILE_ACCESS_PARAMETER
+            ViPRConstants.FILE_ACCESS_PARAMETER,
+            ViPRConstants.ENDPOINT_PARAMETER
     );
 
     /**

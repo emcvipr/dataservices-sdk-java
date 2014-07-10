@@ -15,6 +15,7 @@
 package com.emc.atmos.sync.plugins;
 
 import com.emc.atmos.api.ObjectId;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.util.JdbcWrapper;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.commons.cli.CommandLine;

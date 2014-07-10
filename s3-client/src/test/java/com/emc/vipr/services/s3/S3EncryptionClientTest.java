@@ -14,41 +14,29 @@
  */
 package com.emc.vipr.services.s3;
 
-import static org.junit.Assert.assertEquals;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import org.junit.Assume;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.amazonaws.services.s3.AmazonS3EncryptionClient;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test using the S3 Encryption Client with ViPR.
  */
-public class S3EncryptionClientTest {
-    AmazonS3EncryptionClient s3;
-    
-    private static final String TEST_BUCKET = "basic-s3-encryption-tests";
+public class S3EncryptionClientTest extends AbstractViPRS3Test {
+    @Override
+    protected String getTestBucketPrefix() {
+        return "basic-s3-encryption-tests";
+    }
 
-    @Before
-    public void setUp() throws Exception{
+    @Override
+    protected void initS3() throws Exception{
         s3 = S3ClientFactory.getEncryptionClient();
         Assume.assumeTrue("Could not configure S3 connection", s3 != null);
-        try {
-            s3.createBucket(TEST_BUCKET);
-        } catch(AmazonS3Exception e) {
-            if(e.getStatusCode() == 409) {
-                // Ignore; bucket exists;
-            } else {
-                throw e;
-            }
-        }
     }
     
     @Test
@@ -59,10 +47,10 @@ public class S3EncryptionClientTest {
         ObjectMetadata om = new ObjectMetadata();
         om.setContentLength(data.length);
         om.setContentType("text/plain");
+
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
         
-        s3.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
-        
-        S3Object s3o = s3.getObject(TEST_BUCKET, key);
+        S3Object s3o = s3.getObject(getTestBucket(), key);
         InputStream in = s3o.getObjectContent();
         data = new byte[data.length];
         in.read(data);
@@ -70,8 +58,7 @@ public class S3EncryptionClientTest {
         String outString = new String(data);
         
         assertEquals("String not equal", testString, outString);
-        
-        s3.deleteObject(TEST_BUCKET, key);
 
+        s3.deleteObject(getTestBucket(), key);
     }
 }

@@ -15,6 +15,7 @@
 package com.emc.atmos.sync.plugins;
 
 import com.emc.atmos.api.bean.Metadata;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.util.TimingUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -138,15 +139,11 @@ public abstract class SyncPlugin {
     }
 
     protected <T> T time(Timeable<T> timeable, String name) {
-        timeOperationStart(name);
-        try {
-            T t = timeable.call();
-            timeOperationComplete(name);
-            return t;
-        } catch (RuntimeException e) {
-            timeOperationFailed(name);
-            throw e;
-        }
+        return TimingUtil.time(this, name, timeable);
+    }
+
+    protected <T> T time(Callable<T> timeable, String name) throws Exception {
+        return TimingUtil.time(this, name, timeable);
     }
 
     protected void timeOperationStart(String name) {
@@ -159,10 +156,5 @@ public abstract class SyncPlugin {
 
     protected void timeOperationFailed(String name) {
         TimingUtil.failOperation(this, name);
-    }
-
-    // removes exception from call() signature
-    protected interface Timeable<V> extends Callable<V> {
-        public V call();
     }
 }

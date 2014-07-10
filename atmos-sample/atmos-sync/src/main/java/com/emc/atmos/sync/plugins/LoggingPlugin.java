@@ -19,6 +19,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
@@ -30,6 +31,8 @@ public class LoggingPlugin extends SyncPlugin {
     
     private static final String DEBUG_OPTION = "debug";
     private static final String DEBUG_DESC = "Enables debug messages";
+    private static final String VERBOSE_OPTION = "verbose";
+    private static final String VERBOSE_DESC = "Enables info messages";
     private static final String QUIET_OPTION = "quiet";
     private static final String QUIET_DESC = "Only shows warning and error messages";
     private static final String SILENT_OPTION = "silent";
@@ -56,6 +59,8 @@ public class LoggingPlugin extends SyncPlugin {
         OptionGroup debugOpts = new OptionGroup();
         debugOpts.addOption(OptionBuilder.withLongOpt(DEBUG_OPTION)
                 .withDescription(DEBUG_DESC).create());
+        debugOpts.addOption(OptionBuilder.withLongOpt(VERBOSE_OPTION)
+                .withDescription(VERBOSE_DESC).create());
         debugOpts.addOption(OptionBuilder.withLongOpt(SILENT_OPTION)
                 .withDescription(SILENT_DESC).create());
         debugOpts.addOption(OptionBuilder.withLongOpt(QUIET_OPTION)
@@ -70,16 +75,17 @@ public class LoggingPlugin extends SyncPlugin {
      */
     @Override
     public boolean parseOptions(CommandLine line) {
-        Logger.getRootLogger().setLevel(Level.INFO);
-        
         if(line.hasOption(DEBUG_OPTION)) {
-            Logger.getRootLogger().setLevel(Level.DEBUG);
+            LogManager.getRootLogger().setLevel(Level.DEBUG);
+        }
+        if(line.hasOption(VERBOSE_OPTION)) {
+            LogManager.getRootLogger().setLevel(Level.INFO);
         }
         if(line.hasOption(QUIET_OPTION)) {
-            Logger.getRootLogger().setLevel(Level.WARN);
+            LogManager.getRootLogger().setLevel(Level.WARN);
         }
         if(line.hasOption(SILENT_OPTION)) {
-            Logger.getRootLogger().setLevel(Level.FATAL);
+            LogManager.getRootLogger().setLevel(Level.FATAL);
         }
         
         // Always return false because we don't want this plugin to inject itself into the chain.
@@ -106,7 +112,7 @@ public class LoggingPlugin extends SyncPlugin {
      */
     @Override
     public String getDocumentation() {
-        return "Configures the level of output from the application.";
+        return "Configures the level of output from the application. This sets the root logger level. Any other categories configured in log4j.xml, etc. are unaffected";
     }
 
 }

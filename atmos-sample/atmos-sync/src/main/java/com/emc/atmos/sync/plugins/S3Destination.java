@@ -1,18 +1,5 @@
 package com.emc.atmos.sync.plugins;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
-
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -24,6 +11,18 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.emc.atmos.api.bean.Metadata;
 import com.emc.atmos.sync.util.S3Utils;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class S3Destination extends DestinationPlugin implements InitializingBean {
     private static final Logger l4j = Logger.getLogger(S3Destination.class);
@@ -180,7 +179,7 @@ public class S3Destination extends DestinationPlugin implements InitializingBean
      *                 | "/" | "[" | "]" | "?" | "="
      *                 | "{" | "}" | SP | HT
      * <pre>
-     * @param key the header name to filter.
+     * @param name the header name to filter.
      * @return the metadata name filtered to be compatible with HTTP headers.
      */
     private String filterName(String name) {

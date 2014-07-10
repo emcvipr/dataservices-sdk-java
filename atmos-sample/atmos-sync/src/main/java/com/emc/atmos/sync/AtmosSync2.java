@@ -14,30 +14,20 @@
  */
 package com.emc.atmos.sync;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.emc.atmos.sync.plugins.*;
+import com.emc.atmos.sync.plugins.cas.CasDestination;
+import com.emc.atmos.sync.plugins.cas.CasSource;
 import com.emc.atmos.sync.util.TimingUtil;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.log4j.LogMF;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.util.Assert;
+
+import java.io.File;
+import java.util.*;
 
 /**
  * New plugin-based sync program.  Can be configured in two ways:
@@ -50,9 +40,6 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 	private static final Logger l4j = Logger.getLogger(AtmosSync2.class);
 	private static final String ROOT_SPRING_BEAN = "sync";
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		Set<SyncPlugin> plugins = new HashSet<SyncPlugin>();
 		
@@ -73,6 +60,14 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 		plugins.add(new ShellCommandPlugin());
         plugins.add(new PolicyTransitionPlugin());
         plugins.add(new S3Destination());
+        plugins.add(new LoggingPlugin());
+        plugins.add(new CasSource());
+        plugins.add(new CasDestination());
+        try {
+            plugins.add(new ArchiveFileSource());
+        } catch (UnsupportedClassVersionError e) {
+            System.err.println("Note: archive support requires Java 7 or higher");
+        }
 		
 		Map<String,SyncPlugin> optionMap = new HashMap<String, SyncPlugin>();
 		
@@ -81,18 +76,17 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 		
 		// Merge the options
 		for(SyncPlugin plugin : plugins) {
-			for(Iterator<?> i = plugin.getOptions().getOptions().iterator(); 
-					i.hasNext(); ) {
-				Option o = (Option)i.next();
-				if(options.hasOption(o.getOpt())) {
-					System.err.println("The plugin " + 
-							optionMap.get(o.getOpt()).getName() + 
-							" already installed option " + o.getOpt());
-				} else {
-					options.addOption(o);
-					optionMap.put(o.getOpt(), plugin);
-				}
-			}
+            for (Object o1 : plugin.getOptions().getOptions()) {
+                Option o = (Option) o1;
+                if (options.hasOption(o.getOpt())) {
+                    System.err.println("The plugin " +
+                            optionMap.get(o.getOpt()).getName() +
+                            " already installed option " + o.getOpt());
+                } else {
+                    options.addOption(o);
+                    optionMap.put(o.getOpt(), plugin);
+                }
+            }
 		}
 		
 		GnuParser gnuParser = new  GnuParser();
@@ -101,13 +95,13 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 			line = gnuParser.parse(options, args);
 		} catch (ParseException e) {
 			System.err.println(e.getMessage());
-			help(plugins);
+			shortHelp();
 			System.exit(2);
 		}
 		
 		// Special check for help
 		if(line.hasOption(CommonOptions.HELP_OPTION)) {
-			help(plugins);
+			longHelp(plugins);
 			System.exit(0);
 		}
 
@@ -120,7 +114,7 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
             }
         }
 		
-		AtmosSync2 sync = null;
+		AtmosSync2 sync;
 		// Special check for Spring configuration
 		if(line.hasOption(CommonOptions.SPRING_CONFIG_OPTION)) {
 			sync = springBootstrap(line.getOptionValue(CommonOptions.SPRING_CONFIG_OPTION));
@@ -137,12 +131,12 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 			// Quick check for no-args
 			if(sync.getSource() == null) {
 				System.err.println("Source must be specified");
-				help(plugins);
+				shortHelp();
 				System.exit(1);
 			}
 			if(sync.getDestination() == null) {
 				System.err.println("Destination must be specified");
-				help(plugins);
+				shortHelp();
 				System.exit(1);
 			}
 
@@ -157,20 +151,6 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 		}
 		
 		try {
-//			Thread kill = new Thread(new Runnable() {
-//				
-//				@Override
-//				public void run() {
-//					try {
-//						Thread.sleep(600000);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					System.exit(1);
-//				}
-//			});
-//			kill.start();
 			sync.run();
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -198,8 +178,6 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 	/**
 	 * Initializes a Spring Application Context from the given file and
 	 * bootstraps the AtmosSync2 object from there.
-	 * @param pathToSpringXml
-	 * @return 
 	 */
 	private static AtmosSync2 springBootstrap(String pathToSpringXml) {
 		File springXml = new File(pathToSpringXml);
@@ -222,7 +200,11 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 		return ctx.getBean(ROOT_SPRING_BEAN, AtmosSync2.class);
 	}
 
-	private static void help(Set<SyncPlugin> plugins) {
+    private static void shortHelp() {
+        System.out.println("    use --help for a detailed (quite long) list of options");
+    }
+
+	private static void longHelp(Set<SyncPlugin> plugins) {
 		HelpFormatter fmt = new HelpFormatter();
 		
 		// Make sure we do CommonOptions first
@@ -271,7 +253,6 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 
 	/**
 	 * Sets the source plugin.
-	 * @param source
 	 */
 	public void setSource(SourcePlugin source) {
 		if(this.source != null) {
@@ -288,7 +269,6 @@ public class AtmosSync2 implements Runnable, InitializingBean, DisposableBean {
 
 	/**
 	 * Sets the destination plugin.
-	 * @param destination
 	 */
 	public void setDestination(DestinationPlugin destination) {
 		if(this.destination != null) {

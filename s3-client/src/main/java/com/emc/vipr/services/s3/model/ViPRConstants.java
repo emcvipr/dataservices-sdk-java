@@ -38,6 +38,7 @@ public interface ViPRConstants {
     // Parameter names
     static final String ACCESS_MODE_PARAMETER = "accessmode";
     static final String FILE_ACCESS_PARAMETER = "fileaccess";
+    static final String ENDPOINT_PARAMETER = "endpoint";
     static final String MARKER_PARAMETER = "marker";
     static final String MAX_KEYS_PARAMETER = "max-keys";
 

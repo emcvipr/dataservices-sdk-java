@@ -17,6 +17,7 @@ package com.emc.atmos.sync.plugins;
 import com.emc.atmos.AtmosException;
 import com.emc.atmos.api.ObjectIdentifier;
 import com.emc.atmos.api.bean.Metadata;
+import com.emc.atmos.sync.Timeable;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -34,7 +35,7 @@ import java.util.Map;
 
 /**
  * @author cwikj
- * 
+ *
  */
 public class AtmosDeletePlugin extends SyncPlugin {
 	private static final Logger l4j = Logger.getLogger(AtmosDeletePlugin.class);
@@ -64,76 +65,55 @@ public class AtmosDeletePlugin extends SyncPlugin {
 			id = idAnn.getPath();
 		}
         final ObjectIdentifier fId = id;
-		
-		if(!deleteTags) {
-			try {
-				l4j.debug("Deleting " + id);
-				time(new Timeable<Void>() {
-                    @Override
-                    public Void call() {
-                        source.getAtmos().delete( fId );
-                        return null;
-                    }
-                }, OPERATION_DELETE_OBJECT);
-			} catch(AtmosException e) {
-				if(e.getHttpCode() == 404) {
-					// Good (already deleted)
-					l4j.debug("Object already deleted");
-					getNext().filter(obj);
-					return;
-				} else {
-					throw e;
-				}
-			}
-		} else {
-			try {
-				Map<String, Metadata> metaMap = time(new Timeable<Map<String, Metadata>>() {
+        try {
+            if (deleteTags) {
+                Map<String, Metadata> metaMap = time(new Timeable<Map<String, Metadata>>() {
                     @Override
                     public Map<String, Metadata> call() {
                         return source.getAtmos().getUserMetadata(fId);
                     }
                 }, OPERATION_GET_USER_META);
-				for(final Metadata m : metaMap.values()) {
-					if(m.isListable()) {
-						l4j.debug("Deleting tag " + m.getName() + " from " + id);
-						try {
+                for (final Metadata m : metaMap.values()) {
+                    if (m.isListable()) {
+                        l4j.debug("Deleting tag " + m.getName() + " from " + id);
+                        try {
                             time(new Timeable<Void>() {
                                 @Override
                                 public Void call() {
-							        source.getAtmos().deleteUserMetadata(fId, m.getName());
+                                    source.getAtmos().deleteUserMetadata(fId, m.getName());
                                     return null;
                                 }
                             }, OPERATION_DELETE_META);
-						} catch(AtmosException e) {
-							if(e.getErrorCode() == 1005) {
-								// Already deleted
-								l4j.warn("Tag " + m.getName() + " already deleted (Atmos code 1005)");
-							} else {
-								throw e;
-							}
-						}
-					}
-				}
-				l4j.debug("Deleting " + id);
-                time(new Timeable<Void>() {
-                    @Override
-                    public Void call() {
-				        source.getAtmos().delete( fId );
-                        return null;
+                        } catch (AtmosException e) {
+                            if (e.getErrorCode() == 1005) {
+                                // Already deleted
+                                l4j.warn("Tag " + m.getName() + " already deleted (Atmos code 1005)");
+                            } else {
+                                throw e;
+                            }
+                        }
                     }
-                }, OPERATION_DELETE_OBJECT);
-			} catch(AtmosException e) {
-				if(e.getHttpCode() == 404) {
-					// Good (already deleted)
-					l4j.debug("Object already deleted");
-					getNext().filter(obj);
-					return;
-				} else {
-					throw e;
-				}
-			}
-		}
-		getNext().filter(obj);
+                }
+            }
+            l4j.debug("Deleting " + id);
+            time(new Timeable<Void>() {
+                @Override
+                public Void call() {
+				    source.getAtmos().delete(fId);
+                    return null;
+                }
+            }, OPERATION_DELETE_OBJECT);
+        } catch (AtmosException e) {
+            if (e.getHttpCode() == 404) {
+                // Good (already deleted)
+                l4j.debug("Object already deleted");
+                getNext().filter(obj);
+                return;
+            } else {
+                throw e;
+            }
+        }
+        getNext().filter(obj);
 
 	}
 
@@ -177,7 +157,7 @@ public class AtmosDeletePlugin extends SyncPlugin {
 			throw new IllegalArgumentException(
 					"Destination must be a DummyDestination to use AtmosDeletePlugin");
 		}
-		
+
 		this.source = (AtmosSource) source;
 	}
 
@@ -194,7 +174,7 @@ public class AtmosDeletePlugin extends SyncPlugin {
 				"before deleting the object.";
 	}
 
-	
+
 	/**
 	 * This app can be used to build a tracking database.  See the sample
 	 * spring/atmos-delete.xml for the DDL and queries.
@@ -208,18 +188,18 @@ public class AtmosDeletePlugin extends SyncPlugin {
 			System.err.println("The Spring XML file: " + springXml + " does not exist");
 			System.exit(1);
 		}
-		
+
 		l4j.info("Loading configuration from Spring XML file: " + springXml);
-		FileSystemXmlApplicationContext ctx = 
+		FileSystemXmlApplicationContext ctx =
 				new FileSystemXmlApplicationContext(args[0]);
-		
+
 		if(!ctx.containsBean("dataSource")) {
-			System.err.println("Your Spring XML file: " + springXml + 
+			System.err.println("Your Spring XML file: " + springXml +
 					" must contain one bean named 'dataSource' that " +
 					"initializes a DataSource object");
 			System.exit(1);
 		}
-		
+
 		try {
 			DataSource ds = (DataSource) ctx.getBean("dataSource");
 			File idFile = new File(args[1]);
@@ -255,7 +235,7 @@ public class AtmosDeletePlugin extends SyncPlugin {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 
 	}
 

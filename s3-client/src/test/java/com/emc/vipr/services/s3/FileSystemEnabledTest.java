@@ -14,20 +14,21 @@
  */
 package com.emc.vipr.services.s3;
 
+import com.emc.vipr.services.lib.ViprConfig;
 import com.emc.vipr.services.s3.model.ViPRCreateBucketRequest;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FileSystemEnabledTest {
-    ViPRS3Client vipr;
-
-    private static final String TEST_BUCKET = "fs-access-enabled-tests";
+public class FileSystemEnabledTest extends AbstractViPRS3Test {
+    @Override
+    protected String getTestBucketPrefix() {
+        return "fs-access-enabled-tests";
+    }
 
     @Before
-    public void setUp() throws Exception {
-        vipr = S3ClientFactory.getS3Client();
-        Assume.assumeTrue("Could not configure S3 connection", vipr != null);
+    public void checkEnabled() throws Exception {
+        Assume.assumeFalse("false".equals(ViprConfig.getProperties().getProperty(ViprConfig.PROP_FILE_ACCESS_TESTS_ENABLED, "true")));
     }
 
     /**
@@ -36,10 +37,10 @@ public class FileSystemEnabledTest {
      */
     @Test
     public void testFileSystemAccessEnabled() {
-        ViPRCreateBucketRequest request = new ViPRCreateBucketRequest(TEST_BUCKET);
+        ViPRCreateBucketRequest request = new ViPRCreateBucketRequest(getTestBucket());
         request.setFsAccessEnabled(true);
-        vipr.createBucket(request);
+        s3.createBucket(request);
 
-        vipr.deleteBucket(TEST_BUCKET);
+        s3.deleteBucket(getTestBucket());
     }
 }

@@ -18,6 +18,7 @@ import com.emc.atmos.api.*;
 import com.emc.atmos.api.bean.*;
 import com.emc.atmos.api.jersey.AtmosApiClient;
 import com.emc.atmos.api.request.ListDirectoryRequest;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.util.AtmosMetadata;
 import com.emc.atmos.sync.util.CountingInputStream;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -112,6 +113,8 @@ public class AtmosSource extends MultithreadedCrawlSource implements Initializin
 	private String nameFile;
 
     private boolean includeRetentionExpiration;
+
+    private int bufferSize = CommonOptions.DEFAULT_BUFFER_SIZE;
 
 	public AtmosSource() {
 	}
@@ -256,8 +259,12 @@ public class AtmosSource extends MultithreadedCrawlSource implements Initializin
             }
 
             includeRetentionExpiration = line.hasOption(CommonOptions.INCLUDE_RETENTION_EXPIRATION_OPTION);
-			
-			// Parse threading options
+
+            if (line.hasOption(CommonOptions.IO_BUFFER_SIZE_OPTION)) {
+                bufferSize = Integer.parseInt(line.getOptionValue(CommonOptions.IO_BUFFER_SIZE_OPTION));
+            }
+
+            // Parse threading options
 			super.parseOptions(line);
 			
 			return true;
@@ -684,7 +691,8 @@ public class AtmosSource extends MultithreadedCrawlSource implements Initializin
 						in = time(new Timeable<CountingInputStream>() {
                             @Override
                             public CountingInputStream call() {
-                                return new CountingInputStream(atmos.readObjectStream(sourceId, null).getObject());
+                                return new CountingInputStream(
+                                        new BufferedInputStream(atmos.readObjectStream(sourceId, null).getObject(), bufferSize));
                             }
                         }, OPERATION_READ_OBJECT_STREAM);
 					} catch(Exception e) {
@@ -847,5 +855,13 @@ public class AtmosSource extends MultithreadedCrawlSource implements Initializin
 
     public void setIncludeRetentionExpiration(boolean includeRetentionExpiration) {
         this.includeRetentionExpiration = includeRetentionExpiration;
+    }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
     }
 }

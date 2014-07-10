@@ -18,6 +18,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.model.transform.XmlResponsesSaxParser;
 import com.emc.vipr.services.s3.model.FileAccessObject;
 import com.emc.vipr.services.s3.model.GetFileAccessResult;
+import com.emc.vipr.services.s3.model.ListDataNodesResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
@@ -142,6 +143,82 @@ public class ViPRResponsesSaxParser extends XmlResponsesSaxParser {
             result.setMountPoints(mountPoints);
             result.setObjects(objects);
             if (result.isTruncated()) result.setLastKey(lastObject.getName());
+        }
+    }
+
+    /**
+     * Parses a ?endpoint response XML document from an input stream.
+     *
+     * @param inputStream XML data input stream.
+     * @return the XML handler object populated with data parsed from the XML
+     *         stream.
+     * @throws com.amazonaws.AmazonClientException
+     *
+     */
+    public ListDataNodesResultHandler parseListDataNodeResult(InputStream inputStream)
+            throws AmazonClientException {
+        ListDataNodesResultHandler handler = new ListDataNodesResultHandler();
+        parseXmlInputStream(handler, inputStream);
+        return handler;
+    }
+
+    /*
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <ListDataNode xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <DataNodes>10.247.102.239</DataNodes>
+            <DataNodes>10.247.102.240</DataNodes>
+            <DataNodes>10.247.102.241</DataNodes>
+            <VersionInfo>vipr-2.0.0.0.r2b3e482</VersionInfo>
+        </ListDataNode>
+     */
+    public class ListDataNodesResultHandler extends DefaultHandler {
+        private ListDataNodesResult result = new ListDataNodesResult();
+
+        private StringBuilder text;
+        private String version;
+        private List<String> hosts = new ArrayList<String>();
+
+        public ListDataNodesResult getResult() {
+            return result;
+        }
+
+        @Override
+        public void startDocument() {
+            text = new StringBuilder();
+        }
+
+        @Override
+        public void startElement(String uri, String name, String qName, Attributes attrs) {
+            if (name.equals("ListDataNode")) {
+                // expected, but no action
+            } else if (name.equals("DataNodes")) {
+                text.setLength(0);
+            } else if (name.equals("VersionInfo")) {
+                text.setLength(0);
+            } else {
+                log.warn("Ignoring unexpected tag <" + name + ">");
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String name, String qName) throws SAXException {
+            if (name.equals("DataNodes")) {
+                hosts.add(text.toString().trim());
+            } else if (name.equals("VersionInfo")) {
+                version = text.toString().trim();
+            }
+            text.setLength(0);
+        }
+
+        @Override
+        public void characters(char ch[], int start, int length) {
+            this.text.append(ch, start, length);
+        }
+
+        @Override
+        public void endDocument() throws SAXException {
+            result.setVersion(version);
+            result.setHosts(hosts);
         }
     }
 }

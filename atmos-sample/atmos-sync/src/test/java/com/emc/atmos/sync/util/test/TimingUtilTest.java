@@ -15,6 +15,7 @@
 package com.emc.atmos.sync.util.test;
 
 import com.emc.atmos.sync.AtmosSync2;
+import com.emc.atmos.sync.Timeable;
 import com.emc.atmos.sync.plugins.DummyDestination;
 import com.emc.atmos.sync.plugins.SourcePlugin;
 import com.emc.atmos.sync.plugins.SyncObject;

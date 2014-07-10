@@ -14,14 +14,13 @@
  */
 package com.emc.atmos.sync.plugins;
 
+import com.emc.atmos.sync.util.AtmosMetadata;
+import org.apache.log4j.Logger;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.emc.atmos.sync.util.AtmosMetadata;
 
 public abstract class SyncObject {
 	private static final Logger l4j = Logger.getLogger(SyncObject.class);
@@ -72,11 +71,12 @@ public abstract class SyncObject {
 		return annotations;
 	}
 	
-	public Set<ObjectAnnotation> getAnnotations(Class<? extends ObjectAnnotation> clazz) {
-		Set<ObjectAnnotation> subset = new HashSet<ObjectAnnotation>();
+	public <T extends ObjectAnnotation> Set<T> getAnnotations(Class<T> clazz) {
+		Set<T> subset = new HashSet<T>();
 		for(ObjectAnnotation ann : annotations) {
 			if(ann.getClass().isAssignableFrom(clazz)) {
-				subset.add(ann);
+                @SuppressWarnings("unchecked") T tann = (T) ann;
+				subset.add(tann);
 			}
 		}
 		return subset;
@@ -86,8 +86,8 @@ public abstract class SyncObject {
 	 * Similar to getAnnotations but it expects only one instance of the class.
 	 * If not found, it returns null.
 	 */
-	public ObjectAnnotation getAnnotation(Class<? extends ObjectAnnotation> clazz) {
-		Set<ObjectAnnotation> subset = getAnnotations(clazz);
+	public <T extends ObjectAnnotation> T getAnnotation(Class<T> clazz) {
+		Set<T> subset = getAnnotations(clazz);
 		if(subset.size() < 1) {
 			return null;
 		}

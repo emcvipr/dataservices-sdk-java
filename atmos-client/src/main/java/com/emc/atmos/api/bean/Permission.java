@@ -15,5 +15,5 @@
 package com.emc.atmos.api.bean;
 
 public enum Permission {
-    FULL_CONTROL, WRITE, READ, NONE
+    FULL_CONTROL, EXECUTE, PRIVILEGED_WRITE, WRITE, WRITE_ACL, READ, READ_ACL, NONE
 }

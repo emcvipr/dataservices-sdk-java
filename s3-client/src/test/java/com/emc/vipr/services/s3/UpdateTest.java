@@ -14,43 +14,22 @@
  */
 package com.emc.vipr.services.s3;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import com.emc.test.util.Concurrent;
-import com.emc.test.util.ConcurrentJunitRunner;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.emc.vipr.services.s3.model.UpdateObjectRequest;
-import org.junit.runner.RunWith;
+import org.junit.Test;
 
-@RunWith(ConcurrentJunitRunner.class)
-@Concurrent
-public class UpdateTest {
-    ViPRS3Client vipr;
-    
-    private static final String TEST_BUCKET = "update-tests";
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
-    @Before
-    public void setUp() throws Exception {
-        vipr = S3ClientFactory.getS3Client();
-        Assume.assumeTrue("Could not configure S3 connection", vipr != null);
-        try {
-            vipr.createBucket(TEST_BUCKET);
-        } catch(AmazonS3Exception e) {
-            if(e.getStatusCode() == 409) {
-                // Ignore; bucket exists;
-            } else {
-                throw e;
-            }
-        }
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+public class UpdateTest extends AbstractViPRS3Test {
+    @Override
+    protected String getTestBucketPrefix() {
+        return "update-tests";
     }
     
     @Test
@@ -63,18 +42,18 @@ public class UpdateTest {
         om.setContentLength(data.length);
         om.setContentType("text/plain");
         
-        vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         // Update "World" to "Again"
         String updateString = "Again";
         data = updateString.getBytes("US-ASCII");
         om = new ObjectMetadata();
         om.setContentLength(data.length);
-        UpdateObjectRequest r = new UpdateObjectRequest(TEST_BUCKET, key, 
+        UpdateObjectRequest r = new UpdateObjectRequest(getTestBucket(), key, 
                 new ByteArrayInputStream(data), om).withUpdateRange(6, 10);
-        vipr.updateObject(r);
+        viprS3.updateObject(r);
         
-        S3Object s3o = vipr.getObject(TEST_BUCKET, key);
+        S3Object s3o = s3.getObject(getTestBucket(), key);
         InputStream in = s3o.getObjectContent();
         data = new byte[255];
         int c = in.read(data);
@@ -94,18 +73,18 @@ public class UpdateTest {
         om.setContentLength(data.length);
         om.setContentType("text/plain");
         
-        vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         // Update "World" to "Again"
         String updateString = "Again";
         data = updateString.getBytes("US-ASCII");
         om = new ObjectMetadata();
         om.setContentLength(data.length);
-        UpdateObjectRequest r = new UpdateObjectRequest(TEST_BUCKET, key, 
+        UpdateObjectRequest r = new UpdateObjectRequest(getTestBucket(), key, 
                 new ByteArrayInputStream(data), om).withUpdateOffset(6);
-        vipr.updateObject(r);
+        viprS3.updateObject(r);
         
-        S3Object s3o = vipr.getObject(TEST_BUCKET, key);
+        S3Object s3o = s3.getObject(getTestBucket(), key);
         InputStream in = s3o.getObjectContent();
         data = new byte[255];
         int c = in.read(data);
@@ -113,7 +92,6 @@ public class UpdateTest {
         String outString = new String(data, 0, c, "US-ASCII");
         
         assertEquals("String not equal", "Hello Again!", outString);
-        
     }
         
     // Negative tests
@@ -127,7 +105,7 @@ public class UpdateTest {
         om.setContentLength(data.length);
         om.setContentType("text/plain");
         
-        vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         // Update "World" to "Again" but invalid range
         try {
@@ -135,9 +113,9 @@ public class UpdateTest {
             data = updateString.getBytes("US-ASCII");
             om = new ObjectMetadata();
             om.setContentLength(data.length);
-            UpdateObjectRequest r = new UpdateObjectRequest(TEST_BUCKET, key, 
+            UpdateObjectRequest r = new UpdateObjectRequest(getTestBucket(), key, 
                     new ByteArrayInputStream(data), om).withUpdateRange(15,6);
-            vipr.updateObject(r);
+            viprS3.updateObject(r);
             fail("Expected exception for invalid range.");
         } catch(AmazonS3Exception e) {
             assertEquals("Expected HTTP 416", 416, e.getStatusCode());
@@ -154,7 +132,7 @@ public class UpdateTest {
         om.setContentLength(data.length);
         om.setContentType("text/plain");
         
-        vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         // Update with valid range but not enough bytes to fill it.
         try {
@@ -162,14 +140,13 @@ public class UpdateTest {
             data = updateString.getBytes("US-ASCII");
             om = new ObjectMetadata();
             om.setContentLength(data.length);
-            UpdateObjectRequest r = new UpdateObjectRequest(TEST_BUCKET, key, 
+            UpdateObjectRequest r = new UpdateObjectRequest(getTestBucket(), key, 
                     new ByteArrayInputStream(data), om).withUpdateRange(6,10);
-            vipr.updateObject(r);
+            viprS3.updateObject(r);
             fail("Expected exception for invalid range.");
         } catch(AmazonS3Exception e) {
             assertEquals("Expected HTTP 416", 416, e.getStatusCode());
         }
-        
     }
     
     @Test
@@ -182,7 +159,7 @@ public class UpdateTest {
         om.setContentLength(data.length);
         om.setContentType("text/plain");
         
-        vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         // Update with valid range but too many bytes to fill it.
         try {
@@ -190,14 +167,13 @@ public class UpdateTest {
             data = updateString.getBytes("US-ASCII");
             om = new ObjectMetadata();
             om.setContentLength(data.length);
-            UpdateObjectRequest r = new UpdateObjectRequest(TEST_BUCKET, key, 
+            UpdateObjectRequest r = new UpdateObjectRequest(getTestBucket(), key, 
                     new ByteArrayInputStream(data), om).withUpdateRange(6,10);
-            vipr.updateObject(r);
+            viprS3.updateObject(r);
             fail("Expected exception for invalid range.");
         } catch(AmazonS3Exception e) {
             assertEquals("Expected HTTP 416", 416, e.getStatusCode());
         }
-        
     }
     
 //    @Test
@@ -210,7 +186,7 @@ public class UpdateTest {
         om.setContentLength(data.length);
         om.setContentType("text/plain");
         
-        vipr.putObject(TEST_BUCKET, key, new ByteArrayInputStream(data), om);
+        s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         // Update but put start offset beyond the end of the object.
         try {
@@ -218,14 +194,14 @@ public class UpdateTest {
             data = updateString.getBytes("US-ASCII");
             om = new ObjectMetadata();
             om.setContentLength(data.length);
-            UpdateObjectRequest r = new UpdateObjectRequest(TEST_BUCKET, key, 
+            UpdateObjectRequest r = new UpdateObjectRequest(getTestBucket(), key, 
                     new ByteArrayInputStream(data), om).withUpdateOffset(15);
-            vipr.updateObject(r);
+            viprS3.updateObject(r);
             //fail("Expected exception for invalid range.");
         } catch(AmazonS3Exception e) {
             assertEquals("Expected HTTP 416", 416, e.getStatusCode());
         }
-        S3Object s3o = vipr.getObject(TEST_BUCKET, key);
+        S3Object s3o = s3.getObject(getTestBucket(), key);
         InputStream in = s3o.getObjectContent();
         data = new byte[255];
         int c = in.read(data);
@@ -233,8 +209,5 @@ public class UpdateTest {
         String outString = new String(data, 0, c, "US-ASCII");
         
         assertEquals("String not equal", "Hello Again!", outString);
-        
     }
- 
-
 }

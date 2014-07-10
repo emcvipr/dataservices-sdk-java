@@ -248,4 +248,20 @@ public interface ViPRS3 {
      */
     public GetFileAccessResult getFileAccess(GetFileAccessRequest request)
             throws AmazonClientException;
+
+    /**
+     * Lists all active ViPR data services nodes (hosts) in the ViPR cluster. Useful for load balancing.
+     * @param request
+     *            the configured {@link ListDataNodesRequest} request to
+     *            execute.
+     * @return a {@link ListDataNodesResult} object containing the list of data services endpoints (hosts).
+     * @throws AmazonClientException
+     *             If any errors are encountered in the client while making the
+     *             request or handling the response.
+     * @throws AmazonServiceException
+     *             If any errors occurred in on the server while processing the
+     *             request.
+     */
+    public ListDataNodesResult listDataNodes(ListDataNodesRequest request)
+            throws AmazonClientException;
 }

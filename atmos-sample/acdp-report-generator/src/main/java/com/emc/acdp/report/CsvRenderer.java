@@ -38,7 +38,7 @@ public class CsvRenderer extends Renderer {
         for ( String columnName : getColumnNames() ) {
             headers.add( headerLabels.get( columnName ) );
         }
-        printer.printRecords( headers.toArray( new String[headers.size()] ) );
+        printer.printRecord( headers.toArray( new String[headers.size()] ) );
     }
 
     @Override
@@ -49,7 +49,7 @@ public class CsvRenderer extends Renderer {
             if ( value != null ) values.add( value.toString() );
             else values.add( "" );
         }
-        printer.printRecords( values.toArray( new String[values.size()] ) );
+        printer.printRecord( values.toArray( new String[values.size()] ) );
     }
 
     @Override

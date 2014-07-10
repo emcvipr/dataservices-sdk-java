@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -81,10 +82,8 @@ public class S3Source extends MultithreadedCrawlSource implements InitializingBe
     
     private boolean decodeKeys;
 
-	/**
-	 * @see com.emc.atmos.sync.plugins.SourcePlugin#run()
-	 */
-	@Override
+    private int bufferSize = CommonOptions.DEFAULT_BUFFER_SIZE;
+
 	public void run() {
 		running = true;
 		initQueue();
@@ -197,7 +196,11 @@ public class S3Source extends MultithreadedCrawlSource implements InitializingBe
 			if(line.hasOption(DECODE_KEYS_OPTION)) {
 			    decodeKeys = true;
 			}
-			
+
+            if (line.hasOption(CommonOptions.IO_BUFFER_SIZE_OPTION)) {
+                bufferSize = Integer.parseInt(line.getOptionValue(CommonOptions.IO_BUFFER_SIZE_OPTION));
+            }
+
 			// Parse threading options
 			super.parseOptions(line);
 
@@ -296,7 +299,7 @@ public class S3Source extends MultithreadedCrawlSource implements InitializingBe
 			}
 			if(in == null) {
 				S3Object s3o = amz.getObject(bucketName, key);
-				in = new CountingInputStream(s3o.getObjectContent());
+				in = new CountingInputStream(new BufferedInputStream(s3o.getObjectContent(), bufferSize));
 			}
 
 			return in;
@@ -547,4 +550,11 @@ public class S3Source extends MultithreadedCrawlSource implements InitializingBe
         this.decodeKeys = decodeKeys;
     }
 
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 }

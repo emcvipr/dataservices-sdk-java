@@ -23,6 +23,7 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -84,6 +85,7 @@ public class SqlBlobSource extends MultithreadedGraphSource {
 	private String updateSql;
 	private int updateIdColumn;
 	private int updateAtmosIdColumn;
+    private int bufferSize = CommonOptions.DEFAULT_BUFFER_SIZE;
 
 	private Connection con = null;
 	private PreparedStatement ps = null;
@@ -276,7 +278,7 @@ public class SqlBlobSource extends MultithreadedGraphSource {
 		public InputStream getInputStream() {
 			if (cis == null) {
 				try {
-					cis = new CountingInputStream(blob.getBinaryStream());
+					cis = new CountingInputStream(new BufferedInputStream(blob.getBinaryStream(), bufferSize));
 				} catch (SQLException e) {
 					throw new RuntimeException("Failed to get Blob stream: "
 							+ e.getMessage(), e);
@@ -506,4 +508,12 @@ public class SqlBlobSource extends MultithreadedGraphSource {
 	public void setUpdateAtmosIdColumn(int updateAtmosIdColumn) {
 		this.updateAtmosIdColumn = updateAtmosIdColumn;
 	}
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 }

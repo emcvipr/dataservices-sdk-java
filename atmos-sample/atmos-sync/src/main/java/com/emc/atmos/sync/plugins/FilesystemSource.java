@@ -54,13 +54,14 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 	public static final String DELETE_CHECK_DESC = "when --delete is used, add this option to execute an external script to check whether a file should be deleted.  If the process exits with return code zero, the file is safe to delete.";
 	public static final String DELETE_CHECK_ARG_NAME = "path-to-check-script";
 
-	private File source;
-	private boolean recursive;
-	private boolean useAbsolutePath = false;
+	protected File source;
+	protected boolean recursive;
+    protected boolean useAbsolutePath = false;
 	private boolean ignoreMeta = false;
-	private boolean delete = false;
+	protected boolean delete = false;
 	private long deleteOlderThan = 0;
 	private File deleteCheckScript;
+    protected int bufferSize = CommonOptions.DEFAULT_BUFFER_SIZE;
 	
 	private MimetypesFileTypeMap mimeMap;
 
@@ -119,6 +120,8 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 	 */
 	@Override
 	public boolean parseOptions(CommandLine line) {
+        super.parseOptions(line);
+
 		String sourceOption = line.getOptionValue(CommonOptions.SOURCE_OPTION);
 		if(sourceOption == null) {
 			return false;
@@ -154,9 +157,9 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 							deleteCheckScript + " does not exist");
 				}
 			}
-			
-			// Parse threading options
-			super.parseOptions(line);
+            if (line.hasOption(CommonOptions.IO_BUFFER_SIZE_OPTION)) {
+                bufferSize = Integer.parseInt(line.getOptionValue(CommonOptions.IO_BUFFER_SIZE_OPTION));
+            }
 			
 			return true;
 		}
@@ -208,7 +211,7 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 		public void run() {
 			FileSyncObject fso;
 			try {
-				fso = new FileSyncObject(f);
+				fso = createFileSyncObject(f);
 				if(extraMetadata != null) {
 					for(String key : extraMetadata.keySet()) {
 						String value = extraMetadata.get(key);
@@ -313,25 +316,19 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 				if(f.isDirectory()) {
 					LogMF.debug(l4j, ">Crawling {0}", f);
 					for(File child : f.listFiles()) {
-						if(child.isDirectory() && child.getName().equals(AtmosMetadata.META_DIR)) {
-							// skip
-							continue;
-						}
-						if(!child.isDirectory() || (child.isDirectory() && recursive)) {
-	 						ReadFileTask chTask = new ReadFileTask(child);
-	 						
-	 						// Directories that need crawling go into the crawler
-	 						// queue.  All other objects go into the bounded 
-	 						// transfer queue.  Note that adding to the transfer
-	 						// queue might block if it's full.
-	 						if(child.isDirectory()) {
-	 							LogMF.debug(l4j, "+crawl {0}", child);
-	 							submitCrawlTask(chTask);
-	 						} else {
-	 							LogMF.debug(l4j, "+transfer {0}", child);
-	 							submitTransferTask(chTask);
-	 						}
-	 					}
+                        if (child.isFile()) {
+                            // File objects go into the bounded
+                            // transfer queue.  Note that adding to the transfer
+                            // queue might block if it's full.
+                            LogMF.debug(l4j, "+transfer {0}", child);
+                            submitTransferTask(new ReadFileTask(child));
+                        } else if (recursive && !child.getName().equals(AtmosMetadata.META_DIR)) {
+                            // Directories that need crawling go into the crawler
+                            // queue.  Note that adding to the transfer
+                            // queue might block if it's full.
+                            LogMF.debug(l4j, "+crawl {0}", child);
+                            submitCrawlTask(new ReadFileTask(child));
+                        }
 					}
 					LogMF.debug(l4j, "<Done Crawling {0}", f);
 				}
@@ -357,11 +354,18 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 		}		
 		
 	}
+
+    /**
+     * Override to provide a different FileSyncObject implementation
+     */
+    protected FileSyncObject createFileSyncObject(File f) {
+        return new FileSyncObject(f);
+    }
 	
 	public class FileSyncObject extends SyncObject {
-		private File f;
-		private CountingInputStream in;
-		private String relativePath;
+		protected File f;
+		protected CountingInputStream in;
+		protected String relativePath;
 		
 		@Override
 		public boolean isDirectory() {
@@ -411,7 +415,7 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 			}
 			if(in == null) {
 				try {
-					in = new CountingInputStream(new FileInputStream(f));
+					in = new CountingInputStream(new BufferedInputStream(new FileInputStream(f), bufferSize));
 				} catch (FileNotFoundException e) {
 					throw new RuntimeException("Could not open file:" + f, e);
 				}
@@ -504,4 +508,12 @@ public class FilesystemSource extends MultithreadedCrawlSource {
 	public void setMimeMap(MimetypesFileTypeMap mimeMap) {
 		this.mimeMap = mimeMap;
 	}
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 }

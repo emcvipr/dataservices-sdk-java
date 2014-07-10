@@ -19,6 +19,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
 public class CommonOptions extends SyncPlugin {
+    public static final int DEFAULT_BUFFER_SIZE = 32768;
+
 	public static final String METADATA_ONLY_OPTION = "metadata-only";
 	public static final String METADATA_ONLY_DESC = "Instructs the destination plugin to only synchronize metadata";
 
@@ -39,7 +41,8 @@ public class CommonOptions extends SyncPlugin {
 	public static final String SOURCE_DESC = "The URI for the synchronization source.  Examples:\n" +
 			"http://uid:secret@host:port  -- Uses Atmos as the source; could also be https.\n" +
 			"file:///tmp/atmos/           -- Reads from a directory\n" +
-			"tar:///tmp/atmos/backup.tar  -- Reads from a TAR archive\n" +
+			"archive:///tmp/atmos/backup.tar.gz  -- Reads from an archive file\n" +
+            "s3:bucket-name               -- Reads from an S3 bucket\n" +
 			"\nOther plugins may be available.  See their documentation for URI formats";
 	public static final String SOURCE_ARG_NAME = "source-uri";
 	
@@ -47,7 +50,8 @@ public class CommonOptions extends SyncPlugin {
 	public static final String DESTINATION_DESC = "The URI for the synchronization destination.  Examples:\n" +
 			"http://uid:secret@host:port  -- Uses Atmos as the destination; could also be https.\n" +
 			"file:///tmp/atmos/           -- Writes to a directory\n" +
-			"tar:///tmp/atmos/backup.tar  -- Writes to a TAR archive\n" +
+			"archive:///tmp/atmos/backup.tar.gz  -- Writes to an archive file\n" +
+            "s3:bucket-name               -- Writes to an S3 bucket\n" +
 			"\nOther plugins may be available.  See their documentation for URI formats";
 	public static final String DESTINATION_ARG_NAME = "destination-uri";
 	
@@ -71,6 +75,10 @@ public class CommonOptions extends SyncPlugin {
     public static final String TIMING_WINDOW_OPTION = "timing-window";
     public static final String TIMING_WINDOW_DESC = "Sets the timing window to use for timings.  Every {window-size} objects, timing statistics will be averaged and logged";
     public static final String TIMING_WINDOW_ARG_NAME = "window-size";
+
+    public static final String IO_BUFFER_SIZE_OPTION = "io-buffer-size";
+    public static final String IO_BUFFER_SIZE_DESC = "Sets the buffer size to use when streaming data from the source to the destination. Defaults to " + DEFAULT_BUFFER_SIZE;
+    public static final String IO_BUFFER_SIZE_ARG_NAME = "byte-size";
 
     @Override
 	public void filter(SyncObject obj) {
@@ -113,6 +121,9 @@ public class CommonOptions extends SyncPlugin {
         opts.addOption(OptionBuilder.withLongOpt(TIMING_WINDOW_OPTION)
                 .withDescription(TIMING_WINDOW_DESC).hasArg()
                 .withArgName(TIMING_WINDOW_ARG_NAME).create());
+        opts.addOption(OptionBuilder.withLongOpt(IO_BUFFER_SIZE_OPTION)
+                .withDescription(IO_BUFFER_SIZE_DESC).hasArg()
+                .withArgName(IO_BUFFER_SIZE_ARG_NAME).create());
 		return opts;
 	}
 
