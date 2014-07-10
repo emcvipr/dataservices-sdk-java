@@ -1,0 +1,26 @@
+-classpath
+'/Users/arnetc/tmp/vipr-data-services-sdk-java/smart-client/target/classes:/Users/arnetc/.m2/repository/com/sun/jersey/contribs/jersey-apache-client4/1.11/jersey-apache-client4-1.11.jar:/Users/arnetc/.m2/repository/com/netflix/rxjava/rxjava-core/0.14.2/rxjava-core-0.14.2.jar:/Users/arnetc/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/Users/arnetc/.m2/repository/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar:/Users/arnetc/.m2/repository/com/sun/jersey/jersey-core/1.11/jersey-core-1.11.jar:/Users/arnetc/.m2/repository/org/apache/httpcomponents/httpclient/4.2.1/httpclient-4.2.1.jar:/Users/arnetc/.m2/repository/org/apache/httpcomponents/httpcore/4.2.1/httpcore-4.2.1.jar:/Users/arnetc/.m2/repository/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar:/Users/arnetc/.m2/repository/com/netflix/ribbon/ribbon-core/0.3.9/ribbon-core-0.3.9.jar:/Users/arnetc/.m2/repository/com/sun/jersey/jersey-client/1.11/jersey-client-1.11.jar:/Users/arnetc/.m2/repository/org/slf4j/slf4j-api/1.6.4/slf4j-api-1.6.4.jar:/Users/arnetc/.m2/repository/com/netflix/archaius/archaius-core/0.5.12/archaius-core-0.5.12.jar:/Users/arnetc/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.9.11/jackson-core-asl-1.9.11.jar:/Users/arnetc/.m2/repository/com/google/code/findbugs/annotations/2.0.0/annotations-2.0.0.jar:/Users/arnetc/.m2/repository/com/netflix/ribbon/ribbon-httpclient/0.3.9/ribbon-httpclient-0.3.9.jar:/Users/arnetc/.m2/repository/com/netflix/netflix-commons/netflix-statistics/0.1.1/netflix-statistics-0.1.1.jar:/Users/arnetc/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.9.11/jackson-mapper-asl-1.9.11.jar:/Users/arnetc/.m2/repository/com/google/guava/guava/14.0.1/guava-14.0.1.jar:/Users/arnetc/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/arnetc/.m2/repository/com/netflix/netflix-commons/netflix-commons-util/0.1.1/netflix-commons-util-0.1.1.jar:/Users/arnetc/.m2/repository/commons-configuration/commons-configuration/1.8/commons-configuration-1.8.jar:/Users/arnetc/.m2/repository/com/netflix/servo/servo-core/0.4.44/servo-core-0.4.44.jar:/Users/arnetc/.m2/repository/commons-codec/commons-codec/1.6/commons-codec-1.6.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'/Users/arnetc/tmp/vipr-data-services-sdk-java/smart-client/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2014. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/arnetc/tmp/vipr-data-services-sdk-java/smart-client/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'ViPR Smart Client 2.0 API'
+-link
+'http://java.sun.com/j2se/1.6.0/docs/api'
+-link
+'http://java.sun.com/javase/6/docs/api'
+-use
+-version
+-windowtitle
+'ViPR Smart Client 2.0 API'
