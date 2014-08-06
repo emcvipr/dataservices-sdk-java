@@ -38,9 +38,7 @@ public abstract class TransformFactory<T extends OutputTransform,
 
     /**
      * Gets the "input" transform for the given class and metadata.
-     * @param transformClass the class of transform (in case a particular factory can
-     * handle multiple transform types)
-     * @param config the configuration of the transformClass.
+     * @param transformConfig the configuration of the transformClass.
      * @param metadata metadata extracted from the inbound object (used to fine-tune
      * the transformation and/or provide metadata to also be transformed).
      * @return a transform that can decode the inbound object stream.
@@ -60,8 +58,6 @@ public abstract class TransformFactory<T extends OutputTransform,
     
     /**
      * Checks whether this class can decode the given transformation configuration.
-     * @param transformClass the transformation class to check, e.g. "COMP"
-     * @param config the configuration for the transformation, e.g. "LZMA/9"
      * @param metadata the additional metadata from the object in case additional fields
      * need to be checked.
      * @return true if this factory can decode the given object stream.
@@ -95,7 +91,6 @@ public abstract class TransformFactory<T extends OutputTransform,
     
     /**
      * Sets the priority for this factory.
-     * @param priority
      */
     public void setPriority(int priority) {
         this.priority = priority;
@@ -105,6 +100,4 @@ public abstract class TransformFactory<T extends OutputTransform,
     public int compareTo(TransformFactory<OutputTransform, InputTransform> other) {
         return this.getPriority() - other.getPriority();
     }
-
-
 }

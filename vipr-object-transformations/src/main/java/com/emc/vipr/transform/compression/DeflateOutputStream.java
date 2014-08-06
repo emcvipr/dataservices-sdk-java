@@ -3,6 +3,10 @@
  */
 package com.emc.vipr.transform.compression;
 
+import com.emc.vipr.transform.TransformConstants;
+import com.emc.vipr.transform.encryption.KeyUtils;
+import com.emc.vipr.transform.util.CountingOutputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
@@ -12,10 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
-
-import com.emc.vipr.transform.TransformConstants;
-import com.emc.vipr.transform.encryption.KeyUtils;
-import com.emc.vipr.transform.util.CountingOutputStream;
 
 /**
  * @author cwikj
@@ -29,8 +29,7 @@ public class DeflateOutputStream extends OutputStream implements CompressionStre
     private byte[] uncompressedDigest;
 
     /**
-     * @param arg0
-     * @throws IOException 
+     * @throws IOException
      */
     public DeflateOutputStream(OutputStream streamToCompress, int level) throws IOException {
         Deflater def = new Deflater(level);

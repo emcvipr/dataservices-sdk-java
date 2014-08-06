@@ -1,16 +1,15 @@
 package com.emc.vipr.transform.encryption;
 
+import com.emc.vipr.transform.TransformConstants;
+import com.emc.vipr.transform.TransformException;
+import com.emc.vipr.transform.TransformFactory;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.util.Map;
-
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-
-import com.emc.vipr.transform.TransformConstants;
-import com.emc.vipr.transform.TransformException;
-import com.emc.vipr.transform.TransformFactory;
 
 /**
  * Base class for encryption transformation factories.
@@ -71,9 +70,7 @@ public abstract class EncryptionTransformFactory<T extends EncryptionOutputTrans
 
     /**
      * "Rekeys" an object.  This will locate the 
-     * @param metadata
-     * @return
-     * @throws TransformException 
+     * @throws TransformException
      * @throws DoesNotNeedRekeyException if the object is already up to date with the
      * latest master key and does not need to be rekeyed. 
      */

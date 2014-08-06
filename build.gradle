@@ -1,0 +1,204 @@
+/*
+ * Copyright 2014 EMC Corporation. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+// ****NOTE: to generate a coverage report, run ./gradlew test followed by ./gradlew testCoberturaReport
+ext.aggregatedDocsDir = "${projectDir}/docs"
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:0.9.0',
+                'com.eriwen:gradle-cobertura-plugin:1.1.1'
+    }
+}
+
+allprojects {
+    group 'com.emc.vipr'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    task printVersion << {
+        println "version: $project.version"
+    }
+}
+
+apply plugin: 'grgit-release'
+
+import org.ajoberstar.grgit.*
+
+release {
+    grgit = Grgit.open(project.file('.'))
+    releaseTasks = ['test', 'uploadArchives', 'publishGhPages']
+}
+
+subprojects {
+    if (project.name == 'atmos-client') version = '2.2.1'
+    else version = rootProject.version
+
+    apply plugin: 'cobertura'
+    apply plugin: 'distribution'
+    apply plugin: 'signing'
+
+    defaultTasks 'distZip'
+
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    repositories {
+        mavenCentral()
+    }
+
+    test {
+        jvmArgs '-XX:-UseSplitVerifier'
+    }
+
+    def projectPom = {
+        project {
+            url 'https://community.emc.com/community/vipr'
+
+            scm {
+                url 'https://github.com/emcvipr/dataservices-sdk-java'
+                connection 'scm:git@github.com:emcvipr/dataservices-sdk-java.git'
+                developerConnection 'scm:git:https://asdgit.isus.emc.com/git/vipr-data-services-sdk-java.git'
+            }
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'emc'
+                    organization 'EMC - ViPR'
+                    organizationUrl 'https://community.emc.com/community/vipr'
+                }
+            }
+        }
+    }
+
+    task writePom {
+        ext.pomFile = file("$buildDir/pom.xml")
+        outputs.file pomFile
+        doLast {
+            pom(projectPom).writeTo pomFile
+        }
+    }
+
+    jar {
+        doFirst {
+            manifest {
+                attributes 'Implementation-Version': project.version,
+                        'Class-Path': configurations.runtime.collect { it.getName() }.join(' ')
+            }
+        }
+        into("META-INF/maven/$project.group/$project.name") {
+            from writePom
+        }
+    }
+
+    javadoc {
+        options.quiet()
+    }
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from "${docsDir}/javadoc"
+    }
+    javadocJar.dependsOn javadoc
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives jar
+        archives javadocJar
+        archives sourcesJar
+    }
+
+    distributions {
+        main {
+            contents {
+                from configurations.archives.allArtifacts.files
+                from 'readme.txt'
+                from 'license.txt'
+                into('lib') {
+                    from configurations.runtime
+                }
+            }
+        }
+    }
+
+    signing {
+        required { gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+
+                pom projectPom
+            }
+        }
+    }
+
+    task aggregateDocs << {
+        copy {
+            from docsDir
+            into "${rootProject.aggregatedDocsDir}/${archivesBaseName}/latest"
+        }
+        copy {
+            from docsDir
+            into "${rootProject.aggregatedDocsDir}/${archivesBaseName}/${project.version}"
+        }
+    }
+    aggregateDocs.dependsOn javadoc
+}
+
+apply plugin: 'base'
+apply plugin: 'github-pages'
+
+githubPages {
+    repoUri = 'https://github.com/emcvipr/dataservices-sdk-java.git'
+    credentials {
+        username = githubUsername
+        password = githubPassword
+    }
+    pages {
+        from aggregatedDocsDir
+    }
+}
+publishGhPages.dependsOn subprojects.aggregateDocs
+
+clean {
+    delete aggregatedDocsDir
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}

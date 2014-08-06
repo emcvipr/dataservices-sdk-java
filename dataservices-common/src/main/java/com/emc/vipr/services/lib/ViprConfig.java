@@ -14,11 +14,7 @@
  */
 package com.emc.vipr.services.lib;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 
 /**
@@ -27,12 +23,11 @@ import java.util.Properties;
  */
 public class ViprConfig {
     public static final String VIPR_PROPERTIES_FILE = "vipr.properties";
-    
+
     public static final String PROP_S3_ACCESS_KEY_ID = "vipr.s3.access_key_id";
     public static final String PROP_S3_SECRET_KEY = "vipr.s3.secret_key";
     public static final String PROP_S3_ENDPOINT = "vipr.s3.endpoint";
     public static final String PROP_S3_ENDPOINTS = "vipr.s3.endpoints";
-    public static final String PROP_S3_VIRTUAL_HOST = "vipr.s3.virtual_host";
     public static final String PROP_NAMESPACE = "vipr.namespace";
     public static final String PROP_PUBLIC_KEY = "vipr.encryption.publickey";
     public static final String PROP_PRIVATE_KEY = "vipr.encryption.privatekey";
@@ -45,15 +40,13 @@ public class ViprConfig {
     public static final String PROP_ATMOS_ENDPOINTS = "vipr.atmos.endpoints";
     public static final String PROP_ATMOS_IS_VIPR = "vipr.atmos.is_vipr";
 
-    public static final String PROP_CAS_CONNECT_STRING = "vipr.cas.connect";
-
     public static final String PROP_ACDP_ADMIN_ENDPOINT = "acdp.admin.endpoint";
     public static final String PROP_ACDP_ADMIN_USERNAME =  "acdp.admin.username";
     public static final String PROP_ACDP_ADMIN_PASSWORD = "acdp.admin.password";
     public static final String PROP_ACDP_MGMT_ENDPOINT = "acdp.mgmt.endpoint";
     public static final String PROP_ACDP_MGMT_USERNAME =  "acdp.mgmt.username";
     public static final String PROP_ACDP_MGMT_PASSWORD = "acdp.mgmt.password";
-    
+
     public static final String PROP_ATMOS_SYSMGMT_PROTO = "atmos.sysmgmt.proto";
     public static final String PROP_ATMOS_SYSMGMT_HOST = "atmos.sysmgmt.host";
     public static final String PROP_ATMOS_SYSMGMT_PORT = "atmos.sysmgmt.port";
@@ -68,11 +61,11 @@ public class ViprConfig {
      * @throws FileNotFoundException if the file was not found
      * @throws IOException if there was an error reading the file.
      */
-    public static Properties getProperties() throws FileNotFoundException, IOException {
+    public static Properties getProperties() throws IOException {
         InputStream in = ViprConfig.class.getClassLoader().getResourceAsStream(VIPR_PROPERTIES_FILE);
         if(in == null) {
             // Check in home directory
-            File homeProps = new File(System.getProperty("user.home") + File.separator + 
+            File homeProps = new File(System.getProperty("user.home") + File.separator +
                     VIPR_PROPERTIES_FILE);
             if(homeProps.exists()) {
                 in = new FileInputStream(homeProps);
@@ -80,38 +73,35 @@ public class ViprConfig {
                 throw new FileNotFoundException(VIPR_PROPERTIES_FILE);
             }
         }
-        
+
         Properties props = new Properties();
         props.load(in);
         in.close();
-        
+
         return props;
     }
-    
+
     public static String getProxyUri(Properties p) {
         String host = p.getProperty(PROP_PROXY_HOST);
         String port = p.getProperty(PROP_PROXY_PORT, "80");
-        
+
         if(host == null) {
             // disabled
             return null;
         }
-        
+
         String scheme = "http";
         if(port.endsWith("43")) {
             scheme = "https";
         }
-        
+
         return String.format("%s://%s:%s/", scheme, host, port);
     }
-    
-    
+
+
     /**
      * Utility method that gets a key from a Properties object and throws a
      * RuntimeException if the key does not exist or is not set.
-     * @param p
-     * @param key
-     * @return
      */
     public static String getPropertyNotEmpty(Properties p, String key) {
         String value = p.getProperty(key);
@@ -120,6 +110,6 @@ public class ViprConfig {
         }
         return value;
     }
-    
+
 
 }

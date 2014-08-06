@@ -35,7 +35,6 @@ import com.amazonaws.services.s3.internal.*;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.transform.Unmarshaller;
 import com.amazonaws.util.BinaryUtils;
-import com.amazonaws.util.HttpUtils;
 import com.amazonaws.util.Md5Utils;
 import com.emc.vipr.services.s3.model.*;
 import com.netflix.loadbalancer.LoadBalancerStats;
@@ -384,7 +383,7 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
     @Override
     protected Signer createSigner(Request<?> request, String bucketName, String key) {
         String resourcePath = "/" + ((bucketName != null) ? bucketName + "/" : "")
-                + ((key != null) ? HttpUtils.urlEncode(key, false) : "");
+                + ((key != null) ? key : "");
 
         // if we're using a vHost request, the namespace must be prepended to the resource path when signing
         if (namespace != null && vHostRequest(request, bucketName)) {
