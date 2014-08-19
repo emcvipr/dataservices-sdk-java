@@ -14,6 +14,7 @@
  */
 package com.emc.vipr.services.s3;
 
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -22,12 +23,15 @@ import com.amazonaws.services.s3.transfer.Upload;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * This class tests basic S3 functionality through the ViPRS3Client class.  This class
@@ -42,8 +46,31 @@ public class BasicS3Test extends AbstractViPRS3Test {
 
     @Test
     public void testCreateDeleteBucket() {
-        s3.createBucket(getTestBucket()+"-test");
-        s3.deleteBucket(getTestBucket()+"-test");
+        s3.createBucket(getTestBucket() + "-test");
+        s3.deleteBucket(getTestBucket() + "-test");
+    }
+
+    @Test
+    public void testListBuckets() {
+        String testBucket1 = getTestBucket() + "-1", testBucket2 = getTestBucket() + "-2";
+
+        s3.createBucket(testBucket1);
+        s3.createBucket(testBucket2);
+
+        List<Bucket> buckets = s3.listBuckets();
+        assertNotNull("buckets is null", buckets);
+        assertFalse("buckets is empty", buckets.isEmpty());
+        assertTrue("buckets size is wrong", buckets.size() >= 3);
+
+        int bucketIndex = Collections.binarySearch(buckets, new Bucket(getTestBucket()), bucketComparator);
+        assertTrue("missing bucket " + getTestBucket(), bucketIndex >= 0);
+        bucketIndex = Collections.binarySearch(buckets, new Bucket(testBucket1), bucketComparator);
+        assertTrue("missing bucket " + testBucket1, bucketIndex >= 0);
+        bucketIndex = Collections.binarySearch(buckets, new Bucket(testBucket2), bucketComparator);
+        assertTrue("missing bucket " + testBucket2, bucketIndex >= 0);
+
+        s3.deleteBucket(testBucket1);
+        s3.deleteBucket(testBucket2);
     }
 
     @Test
@@ -83,7 +110,7 @@ public class BasicS3Test extends AbstractViPRS3Test {
         s3.putObject(getTestBucket(), key, new ByteArrayInputStream(data), om);
 
         ObjectMetadata om2 = s3.getObjectMetadata(getTestBucket(), key);
-        Map<String,String> meta = om2.getUserMetadata();
+        Map<String, String> meta = om2.getUserMetadata();
         assertEquals("Metadata name1 incorrect on HEAD", "value1", meta.get("name1"));
         assertEquals("Metadata name2 incorrect on HEAD", "value2", meta.get("name2"));
 
@@ -149,4 +176,11 @@ public class BasicS3Test extends AbstractViPRS3Test {
             os.close();
         return total;
     }
+
+    private Comparator<Bucket> bucketComparator = new Comparator<Bucket>() {
+        @Override
+        public int compare(Bucket o1, Bucket o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
 }

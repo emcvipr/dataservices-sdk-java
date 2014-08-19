@@ -29,30 +29,14 @@ allprojects {
     group 'com.emc.vipr'
     apply plugin: 'idea'
     apply plugin: 'eclipse'
-    apply plugin: 'java'
-    apply plugin: 'maven'
-
-    task printVersion << {
-        println "version: $project.version"
-    }
-}
-
-apply plugin: 'grgit-release'
-
-import org.ajoberstar.grgit.*
-
-release {
-    grgit = Grgit.open(project.file('.'))
-    releaseTasks = ['test', 'uploadArchives', 'publishGhPages']
 }
 
 subprojects {
-    if (project.name == 'atmos-client') version = '2.2.1'
-    else version = rootProject.version
-
+    apply plugin: 'java'
     apply plugin: 'cobertura'
     apply plugin: 'distribution'
     apply plugin: 'signing'
+    apply plugin: 'maven'
 
     defaultTasks 'distZip'
 
@@ -62,18 +46,25 @@ subprojects {
         mavenCentral()
     }
 
+    beforeEvaluate {
+        if (project.name == 'atmos-client') project.version = '2.2.1'
+        else project.version = rootProject.version
+    }
+
     test {
-        jvmArgs '-XX:-UseSplitVerifier'
+        jvmArgs '-XX:-UseSplitVerifier' // required for cobertura and Java 1.7
     }
 
     def projectPom = {
         project {
+            name project.name
+            description project.description
             url 'https://community.emc.com/community/vipr'
 
             scm {
                 url 'https://github.com/emcvipr/dataservices-sdk-java'
                 connection 'scm:git@github.com:emcvipr/dataservices-sdk-java.git'
-                developerConnection 'scm:git:https://asdgit.isus.emc.com/git/vipr-data-services-sdk-java.git'
+                developerConnection 'scm:git@github.com:emcvipr/dataservices-sdk-java.git'
             }
 
             licenses {
@@ -86,9 +77,8 @@ subprojects {
 
             developers {
                 developer {
-                    id 'emc'
-                    organization 'EMC - ViPR'
-                    organizationUrl 'https://community.emc.com/community/vipr'
+                    id 'emcvipr'
+                    name 'EMC ViPR'
                 }
             }
         }
@@ -149,7 +139,7 @@ subprojects {
     }
 
     signing {
-        required { gradle.taskGraph.hasTask("uploadArchives") }
+        required { gradle.taskGraph.hasTask(':uploadArchives') }
         sign configurations.archives
     }
 
@@ -158,7 +148,7 @@ subprojects {
             mavenDeployer {
                 beforeDeployment { deployment -> signing.signPom(deployment) }
 
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
                     authentication(userName: sonatypeUsername, password: sonatypePassword)
                 }
 
@@ -182,6 +172,7 @@ subprojects {
 
 apply plugin: 'base'
 apply plugin: 'github-pages'
+apply plugin: 'grgit-release'
 
 githubPages {
     repoUri = 'https://github.com/emcvipr/dataservices-sdk-java.git'
@@ -194,6 +185,13 @@ githubPages {
     }
 }
 publishGhPages.dependsOn subprojects.aggregateDocs
+
+import org.ajoberstar.grgit.*
+
+release {
+    grgit = Grgit.open(project.file('.'), new Credentials(gitUsername, gitPassword))
+    releaseTasks = subprojects.test + subprojects.distZip + subprojects.uploadArchives + publishGhPages
+}
 
 clean {
     delete aggregatedDocsDir

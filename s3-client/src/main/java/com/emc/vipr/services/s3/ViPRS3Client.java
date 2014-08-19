@@ -52,6 +52,8 @@ import java.util.Map;
 public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
     private static Log log = LogFactory.getLog(ViPRS3Client.class);
 
+    protected static final String IP_ADDRESS_PATTERN = "^([0-9]{1,3}\\.){3}[0-9]{1,3}$";
+
 	protected String namespace;
 
     /**
@@ -364,7 +366,7 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
 
         if (namespace != null) {
             // is this a vHost request?
-            if (vHostRequest(request, bucketName)) {
+            if (isVHostRequest(request)) {
                 // then prepend the namespace and bucket into the request host
                 request.setEndpoint(convertToVirtualHostEndpoint(namespace, bucketName));
             } else {
@@ -386,15 +388,15 @@ public class ViPRS3Client extends AmazonS3Client implements ViPRS3, AmazonS3 {
                 + ((key != null) ? key : "");
 
         // if we're using a vHost request, the namespace must be prepended to the resource path when signing
-        if (namespace != null && vHostRequest(request, bucketName)) {
+        if (namespace != null && isVHostRequest(request)) {
             resourcePath = "/" + namespace + resourcePath;
         }
 
         return new ViPRS3Signer(request.getHttpMethod().toString(), resourcePath);
     }
 
-    protected boolean vHostRequest(Request<?> request, String bucketName) {
-        return request.getResourcePath() == null || !request.getResourcePath().startsWith(bucketName + "/");
+    protected boolean isVHostRequest(Request<?> request) {
+        return !(clientOptions.isPathStyleAccess() || request.getEndpoint().getHost().matches(IP_ADDRESS_PATTERN));
     }
 
     /**

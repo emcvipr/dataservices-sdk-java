@@ -19,15 +19,20 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.emc.test.util.Concurrent;
 import com.emc.test.util.ConcurrentJunitRunner;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @RunWith(ConcurrentJunitRunner.class)
 @Concurrent
 public abstract class AbstractViPRS3Test {
-    private static int counter = 0;
+    private static final Log l4j = LogFactory.getLog(AbstractViPRS3Test.class);
+    private static AtomicInteger counter = new AtomicInteger(0);
     private ThreadLocal<String> testBucket = new ThreadLocal<String>();
 
     protected AmazonS3 s3;
@@ -40,22 +45,14 @@ public abstract class AbstractViPRS3Test {
         return "basic-s3-tests";
     }
 
-    private synchronized void setTestBucket() {
-        testBucket.set(getTestBucketPrefix() + "-" + ++counter);
-    }
-
-    protected synchronized String getTestBucket() {
+    protected final String getTestBucket() {
         return testBucket.get();
     }
 
-    private synchronized void clearTestBucket() {
-        testBucket.remove();
-    }
-
     @Before
-    public void setUp() throws Exception {
+    public final void setUp() throws Exception {
         initS3();
-        setTestBucket();
+        testBucket.set(getTestBucketPrefix() + "-" + counter.incrementAndGet());
         createBucket();
     }
 
@@ -76,15 +73,15 @@ public abstract class AbstractViPRS3Test {
     }
 
     @After
-    public void tearDown() throws Exception {
-        if(s3 == null) {
+    public final void tearDown() throws Exception {
+        if (s3 == null) {
             return;
         }
         cleanUpBucket();
-        clearTestBucket();
     }
 
     protected void cleanUpBucket() throws Exception {
+        l4j.warn("cleaning up bucket " + getTestBucket());
         for (S3ObjectSummary summary : s3.listObjects(getTestBucket()).getObjectSummaries()) {
             s3.deleteObject(summary.getBucketName(), summary.getKey());
         }
