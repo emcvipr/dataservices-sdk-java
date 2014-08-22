@@ -20,6 +20,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.*;
@@ -162,6 +163,43 @@ public class BasicS3Test extends AbstractViPRS3Test {
         s3.deleteObject(getTestBucket(), key);
     }
 
+    @Test
+    public void testFunkyKeys() throws Exception {
+        String key1 = "foo!@#$%^&*()_-+=",
+                key2 = "foo//bar",
+                key3 = "foo bar/",
+                key4 = "/foo/bar/baz space.txt";
+        byte[] content = "Hello Funky Keys!".getBytes("UTF-8");
+
+        ObjectMetadata om = new ObjectMetadata();
+        om.setContentLength(content.length);
+        om.setContentType("text/plain");
+
+        s3.putObject(getTestBucket(), key1, new ByteArrayInputStream(content), om);
+        S3Object s3o = s3.getObject(getTestBucket(), key1);
+        Assert.assertEquals(s3o.getKey(), key1);
+        Assert.assertArrayEquals(key1 + " content different", readStream(s3o.getObjectContent()), content);
+        s3.deleteObject(getTestBucket(), key1);
+
+        s3.putObject(getTestBucket(), key2, new ByteArrayInputStream(content), om);
+        s3o = s3.getObject(getTestBucket(), key2);
+        Assert.assertEquals(s3o.getKey(), key2);
+        Assert.assertArrayEquals(key2 + " content different", readStream(s3o.getObjectContent()), content);
+        s3.deleteObject(getTestBucket(), key2);
+
+        s3.putObject(getTestBucket(), key3, new ByteArrayInputStream(content), om);
+        s3o = s3.getObject(getTestBucket(), key3);
+        Assert.assertEquals(s3o.getKey(), key3);
+        Assert.assertArrayEquals(key3 + " content different", readStream(s3o.getObjectContent()), content);
+        s3.deleteObject(getTestBucket(), key3);
+
+        s3.putObject(getTestBucket(), key4, new ByteArrayInputStream(content), om);
+        s3o = s3.getObject(getTestBucket(), key4);
+        Assert.assertEquals(s3o.getKey(), key4);
+        Assert.assertArrayEquals(key4 + " content different", readStream(s3o.getObjectContent()), content);
+        s3.deleteObject(getTestBucket(), key4);
+    }
+
     private int copyStream(InputStream is, OutputStream os) throws IOException {
         byte[] buffer = new byte[100 * 1024];
         int total = 0, read = is.read(buffer);
@@ -175,6 +213,12 @@ public class BasicS3Test extends AbstractViPRS3Test {
         if (os != null)
             os.close();
         return total;
+    }
+
+    private byte[] readStream(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        copyStream(is, baos);
+        return baos.toByteArray();
     }
 
     private Comparator<Bucket> bucketComparator = new Comparator<Bucket>() {

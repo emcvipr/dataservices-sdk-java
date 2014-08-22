@@ -23,6 +23,7 @@ import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.internal.S3Signer;
 import com.amazonaws.services.s3.internal.ServiceUtils;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
+import com.amazonaws.util.HttpUtils;
 import com.emc.vipr.services.s3.model.ViPRConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,9 +57,18 @@ public class ViPRS3Signer extends S3Signer {
             addSessionCredentials(request, (AWSSessionCredentials) sanitizedCredentials);
         }
 
+        /*
+         * In s3 sigv2, the way slash characters are encoded should be
+         * consistent in both the request url and the encoded resource path.
+         * Since we have to encode "//" to "/%2F" in the request url to make
+         * httpclient works, we need to do the same encoding here for the
+         * resource path.
+         */
+        String encodedResourcePath = HttpUtils.appendUri(request.getEndpoint().getPath(), resourcePath, true);
+
         Date date = getSignatureDate(request.getTimeOffset());
         request.addHeader(Headers.DATE, ServiceUtils.formatRfc822Date(date));
-        String canonicalString = makeS3CanonicalString(httpVerb, resourcePath, request, null);
+        String canonicalString = makeS3CanonicalString(httpVerb, encodedResourcePath, request, null);
         log.debug("Calculated string to sign:\n\"" + canonicalString + "\"");
 
         String signature = super.signAndBase64Encode(canonicalString, sanitizedCredentials.getAWSSecretKey(), SigningAlgorithm.HmacSHA1);

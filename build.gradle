@@ -31,6 +31,30 @@ allprojects {
     apply plugin: 'eclipse'
 }
 
+import org.ajoberstar.grgit.*
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.allTasks.any { it.name == 'uploadArchives' }) {
+        def sonatypePass = new String(System.console().readPassword('\nSonatype password: '))
+        subprojects {
+            uploadArchives.repositories.mavenDeployer.repository.authentication.password = sonatypePass
+        }
+    }
+    if (taskGraph.allTasks.any { it instanceof Sign }) {
+        def signingPass = new String(System.console().readPassword('\nSigning key passphrase: '))
+        subprojects {
+            ext.'signing.password' = signingPass
+        }
+    }
+    if (taskGraph.hasTask(':publishGhPages')) {
+        githubPages.credentials.password = new String(System.console().readPassword('\nGithub password: '))
+    }
+    if (taskGraph.hasTask(':release')) {
+        def gitPassword = new String(System.console().readPassword('\nASD git password: '))
+        release.grgit = Grgit.open(project.file('.'), new Credentials(gitUsername, gitPassword))
+    }
+}
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'cobertura'
@@ -149,7 +173,7 @@ subprojects {
                 beforeDeployment { deployment -> signing.signPom(deployment) }
 
                 repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    authentication(userName: sonatypeUsername, password: '')
                 }
 
                 pom projectPom
@@ -178,7 +202,7 @@ githubPages {
     repoUri = 'https://github.com/emcvipr/dataservices-sdk-java.git'
     credentials {
         username = githubUsername
-        password = githubPassword
+        password = ''
     }
     pages {
         from aggregatedDocsDir
@@ -186,10 +210,8 @@ githubPages {
 }
 publishGhPages.dependsOn subprojects.aggregateDocs
 
-import org.ajoberstar.grgit.*
-
 release {
-    grgit = Grgit.open(project.file('.'), new Credentials(gitUsername, gitPassword))
+    grgit = Grgit.open(project.file('.'))
     releaseTasks = subprojects.test + subprojects.distZip + subprojects.uploadArchives + publishGhPages
 }
 
