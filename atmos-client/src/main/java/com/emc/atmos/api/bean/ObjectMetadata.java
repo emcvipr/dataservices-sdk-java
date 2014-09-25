@@ -15,6 +15,7 @@
 package com.emc.atmos.api.bean;
 
 import com.emc.atmos.api.Acl;
+import com.emc.atmos.api.ChecksumValue;
 
 import java.util.Map;
 
@@ -22,21 +23,26 @@ public class ObjectMetadata {
     private Map<String, Metadata> metadata;
     private Acl acl;
     private String contentType;
+    private ChecksumValue wsChecksum;
+    private ChecksumValue serverChecksum;
 
     public ObjectMetadata() {
     }
 
-    public ObjectMetadata( Map<String, Metadata> metadata, Acl acl, String contentType ) {
+    public ObjectMetadata(Map<String, Metadata> metadata, Acl acl, String contentType,
+                          ChecksumValue wsChecksum, ChecksumValue serverChecksum) {
         this.metadata = metadata;
         this.acl = acl;
         this.contentType = contentType;
+        this.wsChecksum = wsChecksum;
+        this.serverChecksum = serverChecksum;
     }
 
     public String getContentType() {
         return contentType;
     }
 
-    public void setContentType( String contentType ) {
+    public void setContentType(String contentType) {
         this.contentType = contentType;
     }
 
@@ -44,7 +50,7 @@ public class ObjectMetadata {
         return acl;
     }
 
-    public void setAcl( Acl acl ) {
+    public void setAcl(Acl acl) {
         this.acl = acl;
     }
 
@@ -52,7 +58,31 @@ public class ObjectMetadata {
         return metadata;
     }
 
-    public void setMetadata( Map<String, Metadata> metadata ) {
+    public void setMetadata(Map<String, Metadata> metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Returns the wschecksum if that feature was enabled for this object.
+     */
+    public ChecksumValue getWsChecksum() {
+        return wsChecksum;
+    }
+
+    public void setWsChecksum(ChecksumValue wsChecksum) {
+        this.wsChecksum = wsChecksum;
+    }
+
+    /**
+     * Returns the last server-generated checksum for a single update to this object.
+     *
+     * @see com.emc.atmos.api.request.PutObjectRequest#setServerGeneratedChecksumAlgorithm(com.emc.atmos.api.ChecksumAlgorithm)
+     */
+    public ChecksumValue getServerChecksum() {
+        return serverChecksum;
+    }
+
+    public void setServerChecksum(ChecksumValue serverChecksum) {
+        this.serverChecksum = serverChecksum;
     }
 }

@@ -118,6 +118,7 @@ public class JerseyUtil {
 
     static void addFilters( Client client, AtmosConfig config ) {
         // add filters
+        client.addFilter( new ChecksumFilter() );
         client.addFilter( new ErrorFilter() );
         if ( config.isEnableRetry() ) client.addFilter( new RetryFilter( config ) );
         client.addFilter( new AuthFilter( config ) );

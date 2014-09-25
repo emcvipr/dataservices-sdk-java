@@ -14,6 +14,14 @@
  */
 package com.emc.atmos.api.encryption;
 
+import com.emc.atmos.AtmosException;
+import com.emc.atmos.api.*;
+import com.emc.atmos.api.bean.*;
+import com.emc.atmos.api.request.*;
+import com.emc.vipr.transform.*;
+import com.emc.vipr.transform.encryption.DoesNotNeedRekeyException;
+import com.emc.vipr.transform.encryption.EncryptionTransformFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,59 +29,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import com.emc.atmos.AtmosException;
-import com.emc.atmos.api.Acl;
-import com.emc.atmos.api.AtmosApi;
-import com.emc.atmos.api.BufferSegment;
-import com.emc.atmos.api.ObjectId;
-import com.emc.atmos.api.ObjectIdentifier;
-import com.emc.atmos.api.ObjectPath;
-import com.emc.atmos.api.Range;
-import com.emc.atmos.api.bean.BasicResponse;
-import com.emc.atmos.api.bean.CreateAccessTokenResponse;
-import com.emc.atmos.api.bean.CreateObjectResponse;
-import com.emc.atmos.api.bean.GenericResponse;
-import com.emc.atmos.api.bean.GetAccessTokenResponse;
-import com.emc.atmos.api.bean.ListAccessTokensResponse;
-import com.emc.atmos.api.bean.ListDirectoryResponse;
-import com.emc.atmos.api.bean.ListObjectsResponse;
-import com.emc.atmos.api.bean.ListVersionsResponse;
-import com.emc.atmos.api.bean.Metadata;
-import com.emc.atmos.api.bean.ObjectInfo;
-import com.emc.atmos.api.bean.ObjectMetadata;
-import com.emc.atmos.api.bean.ReadObjectResponse;
-import com.emc.atmos.api.bean.ServiceInformation;
-import com.emc.atmos.api.request.CreateAccessTokenRequest;
-import com.emc.atmos.api.request.CreateObjectRequest;
-import com.emc.atmos.api.request.CreateSubtenantRequest;
-import com.emc.atmos.api.request.ListAccessTokensRequest;
-import com.emc.atmos.api.request.ListDirectoryRequest;
-import com.emc.atmos.api.request.ListObjectsRequest;
-import com.emc.atmos.api.request.ListVersionsRequest;
-import com.emc.atmos.api.request.PreSignedRequest;
-import com.emc.atmos.api.request.ReadObjectRequest;
-import com.emc.atmos.api.request.Request;
-import com.emc.atmos.api.request.UpdateObjectRequest;
-import com.emc.vipr.transform.InputTransform;
-import com.emc.vipr.transform.OutputTransform;
-import com.emc.vipr.transform.TransformConstants;
-import com.emc.vipr.transform.TransformException;
-import com.emc.vipr.transform.TransformFactory;
-import com.emc.vipr.transform.encryption.DoesNotNeedRekeyException;
-import com.emc.vipr.transform.encryption.EncryptionTransformFactory;
+import java.util.*;
 
 /**
  * Implements client-side "Envelope Encryption" on top of the Atmos API.  With envelope
@@ -932,6 +888,14 @@ public class AtmosEncryptionClient implements AtmosApi {
     public Map<String, Metadata> getSystemMetadata(ObjectIdentifier identifier,
             String... metadataNames) {
         return delegate.getSystemMetadata(identifier, metadataNames);
+    }
+
+    /*
+     * @see com.emc.atmos.api.AtmosApi#objectExists(com.emc.atmos.api.ObjectIdentifier)
+     */
+    @Override
+    public boolean objectExists(ObjectIdentifier identifier) {
+        return delegate.objectExists(identifier);
     }
 
     /*

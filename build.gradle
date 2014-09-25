@@ -71,7 +71,7 @@ subprojects {
     }
 
     beforeEvaluate {
-        if (project.name == 'atmos-client') project.version = '2.2.1'
+        if (project.name == 'atmos-client') project.version = '2.2.2'
         else project.version = rootProject.version
     }
 

@@ -51,7 +51,8 @@ public final class HttpUtil {
 
     public static String decodeUtf8( String value ) {
         try {
-            return URLDecoder.decode( value, "UTF-8" );
+            // don't want '+' decoded to a space
+            return URLDecoder.decode( value.replace( "+", "%2B" ), "UTF-8" );
         } catch ( UnsupportedEncodingException e ) {
             throw new RuntimeException( "UTF-8 encoding isn't supported on this system", e ); // unrecoverable
         }

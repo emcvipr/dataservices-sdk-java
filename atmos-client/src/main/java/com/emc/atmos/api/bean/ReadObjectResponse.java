@@ -50,16 +50,22 @@ public class ReadObjectResponse<T> extends BasicResponse {
             metaMap.putAll( RestUtil.parseMetadataHeader( getFirstHeader( RestUtil.XHEADER_META ), false ) );
             metaMap.putAll( RestUtil.parseMetadataHeader( getFirstHeader( RestUtil.XHEADER_LISTABLE_META ), true ) );
 
-            metadata = new ObjectMetadata( metaMap, acl, getContentType() );
+            String wsChecksumHeader = getFirstHeader( RestUtil.XHEADER_WSCHECKSUM );
+            ChecksumValue wsChecksum = wsChecksumHeader == null ? null : new ChecksumValueImpl( wsChecksumHeader );
+            String serverChecksumHeader = getFirstHeader( RestUtil.XHEADER_CONTENT_CHECKSUM );
+            ChecksumValue serverChecksum = serverChecksumHeader == null ? null :
+                                           new ChecksumValueImpl( getFirstHeader( RestUtil.XHEADER_CONTENT_CHECKSUM ) );
+
+            metadata = new ObjectMetadata( metaMap, acl, getContentType(), wsChecksum, serverChecksum );
         }
         return metadata;
     }
 
     public ChecksumValue getWsChecksum() {
-        return new ChecksumValueImpl( getFirstHeader( RestUtil.XHEADER_WSCHECKSUM ) );
+        return getMetadata().getWsChecksum();
     }
 
     public ChecksumValue getServerGeneratedChecksum() {
-        return new ChecksumValueImpl( getFirstHeader( RestUtil.XHEADER_CONTENT_CHECKSUM ) );
+        return getMetadata().getServerChecksum();
     }
 }

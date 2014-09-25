@@ -243,6 +243,15 @@ public interface AtmosApi {
     Map<String, Metadata> getSystemMetadata( ObjectIdentifier identifier, String... metadataNames );
 
     /**
+     * Determines whether an object exists with the specified identifier.  Implementations will probably make
+     * a get-system-metadata call and return false if the server returns a 404.
+     *
+     * @param identifier The identifier of the object. Can be any ObjectIdentifier.
+     * @return true if an object exists in the cloud with the specified identifier.
+     */
+    boolean objectExists( ObjectIdentifier identifier );
+
+    /**
      * Gets an object's metadata, ACL and content-type all in one call.
      *
      * @param identifier The identifier of the object. Can be any ObjectIdentifier.

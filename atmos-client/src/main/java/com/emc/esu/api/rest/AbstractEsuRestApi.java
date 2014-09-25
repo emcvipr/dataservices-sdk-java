@@ -14,37 +14,9 @@
  */
 package com.emc.esu.api.rest;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
+import com.emc.esu.api.*;
+import com.emc.esu.api.Grantee.GRANT_TYPE;
+import com.emc.util.HttpUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -53,28 +25,18 @@ import org.jdom.JDOMException;
 import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 
-import com.emc.esu.api.Acl;
-import com.emc.esu.api.BufferSegment;
-import com.emc.esu.api.Checksum;
-import com.emc.esu.api.DirectoryEntry;
-import com.emc.esu.api.EsuApi;
-import com.emc.esu.api.EsuException;
-import com.emc.esu.api.Extent;
-import com.emc.esu.api.Grant;
-import com.emc.esu.api.Grantee;
-import com.emc.esu.api.Grantee.GRANT_TYPE;
-import com.emc.esu.api.Identifier;
-import com.emc.esu.api.ListOptions;
-import com.emc.esu.api.Metadata;
-import com.emc.esu.api.MetadataList;
-import com.emc.esu.api.MetadataTag;
-import com.emc.esu.api.MetadataTags;
-import com.emc.esu.api.ObjectId;
-import com.emc.esu.api.ObjectPath;
-import com.emc.esu.api.ObjectResult;
-import com.emc.esu.api.Permission;
-import com.emc.esu.api.ServiceInformation;
-import com.emc.esu.api.Version;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.net.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Encapsulates common REST API functionality that is independant of 
@@ -1087,12 +1049,11 @@ public abstract class AbstractEsuRestApi implements EsuApi {
     }
 
     protected String encodeUtf8(String value) throws UnsupportedEncodingException {
-        // Use %20, not +
-        return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
+        return HttpUtil.encodeUtf8(value);
     }
     
     protected String decodeUtf8(String value) throws UnsupportedEncodingException {
-        return URLDecoder.decode(value, "UTF-8");
+        return HttpUtil.decodeUtf8(value);
     }
 
     /**

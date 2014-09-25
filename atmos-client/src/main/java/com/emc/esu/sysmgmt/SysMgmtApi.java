@@ -14,28 +14,17 @@
  */
 package com.emc.esu.sysmgmt;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.X509TrustManager;
-import javax.net.ssl.TrustManager;
-
-import org.apache.log4j.Logger;
-
 import com.emc.esu.sysmgmt.pox.GetUidRequest;
 import com.emc.esu.sysmgmt.pox.GetUidResponse;
 import com.emc.esu.sysmgmt.pox.ListRmgRequestPox;
 import com.emc.esu.sysmgmt.pox.ListRmgResponsePox;
+import com.emc.util.HttpUtil;
+import org.apache.log4j.Logger;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.ProtocolException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -278,9 +267,9 @@ public class SysMgmtApi {
         con.setDoOutput(true);
         con.connect();
         OutputStream out = con.getOutputStream();
-        String urlTenantName = URLEncoder.encode(tenantName, "UTF-8");
-        String urluser = URLEncoder.encode(tenantAdmin, "UTF-8");
-        String urlpass = URLEncoder.encode(tenantAdminPassword, "UTF-8");
+        String urlTenantName = HttpUtil.encodeUtf8(tenantName);
+        String urluser = HttpUtil.encodeUtf8(tenantAdmin);
+        String urlpass = HttpUtil.encodeUtf8(tenantAdminPassword);
         String requestBody = "tenant_name=" + urlTenantName + "&username=" + 
         		urluser + "&password=" + urlpass;
         out.write(requestBody.getBytes("US-ASCII"));
@@ -317,8 +306,8 @@ public class SysMgmtApi {
         con.setDoOutput(true);
         con.connect();
         OutputStream out = con.getOutputStream();
-        String urluser = URLEncoder.encode(username, "UTF-8");
-        String urlpass = URLEncoder.encode(password, "UTF-8");
+        String urluser = HttpUtil.encodeUtf8(username);
+        String urlpass = HttpUtil.encodeUtf8(password);
         String requestBody = "auth_type=local&auth_addr=&username=" + 
         		urluser + "&password=" + urlpass;
         out.write(requestBody.getBytes("US-ASCII"));

@@ -23,8 +23,6 @@ import org.apache.log4j.Logger;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -207,21 +205,17 @@ public final class RestUtil {
     }
 
     public static Map<String, Metadata> parseMetadataHeader( String headerValue, boolean listable ) {
-        try {
-            Map<String, Metadata> metadataMap = new TreeMap<String, Metadata>();
-            if ( headerValue == null ) return metadataMap;
-            String[] pairs = headerValue.split( ",(?=[^,]+=)" ); // comma with key as look-ahead (not part of match)
-            for ( String pair : pairs ) {
-                String[] components = pair.split( "=", 2 );
-                String name = URLDecoder.decode( components[0].trim(), "UTF-8" );
-                String value = components.length > 1 ? URLDecoder.decode( components[1], "UTF-8" ) : null;
-                Metadata metadata = new Metadata( name, value, listable );
-                metadataMap.put( name, metadata );
-            }
-            return metadataMap;
-        } catch ( UnsupportedEncodingException e ) {
-            throw new RuntimeException( "UTF-8 encoding isn't supported on this system", e );
+        Map<String, Metadata> metadataMap = new TreeMap<String, Metadata>();
+        if ( headerValue == null ) return metadataMap;
+        String[] pairs = headerValue.split( ",(?=[^,]+=)" ); // comma with key as look-ahead (not part of match)
+        for ( String pair : pairs ) {
+            String[] components = pair.split( "=", 2 );
+            String name = HttpUtil.decodeUtf8( components[0].trim() );
+            String value = components.length > 1 ? HttpUtil.decodeUtf8( components[1] ) : null;
+            Metadata metadata = new Metadata( name, value, listable );
+            metadataMap.put( name, metadata );
         }
+        return metadataMap;
     }
 
     public static Map<String, Permission> parseAclHeader( String headerValue ) {

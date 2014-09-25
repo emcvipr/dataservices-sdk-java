@@ -24,13 +24,12 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.ClientFilter;
-
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -362,6 +361,17 @@ public class AtmosApiClient extends AbstractAtmosApi {
     }
 
     @Override
+    public boolean objectExists( ObjectIdentifier identifier ) {
+        try {
+            getSystemMetadata( identifier );
+            return true;
+        } catch ( AtmosException e ) {
+            if ( e.getErrorCode() == 1003 ) return false;
+            throw e;
+        }
+    }
+
+    @Override
     public ObjectMetadata getObjectMetadata( ObjectIdentifier identifier ) {
         URI uri = config.resolvePath( identifier.getRelativeResourcePath(), null );
         WebResource.Builder builder = client.resource( uri ).getRequestBuilder();
@@ -382,9 +392,14 @@ public class AtmosApiClient extends AbstractAtmosApi {
                                                               .getFirst( RestUtil.XHEADER_LISTABLE_META ),
                                                       true ) );
 
+        String wsChecksumHeader = response.getHeaders().getFirst( RestUtil.XHEADER_WSCHECKSUM );
+        ChecksumValue wsChecksum = wsChecksumHeader == null ? null : new ChecksumValueImpl( wsChecksumHeader );
+        String serverChecksumHeader = response.getHeaders().getFirst( RestUtil.XHEADER_CONTENT_CHECKSUM );
+        ChecksumValue serverChecksum = serverChecksumHeader == null ? null : new ChecksumValueImpl( serverChecksumHeader );
+
         response.close();
 
-        return new ObjectMetadata( metaMap, acl, response.getType().toString() );
+        return new ObjectMetadata( metaMap, acl, response.getType().toString(), wsChecksum, serverChecksum );
     }
 
     @Override
@@ -662,11 +677,11 @@ public class AtmosApiClient extends AbstractAtmosApi {
      * Populates a response object with data from the ClientResponse.
      */
     protected <T extends BasicResponse> T fillResponse( T response, ClientResponse clientResponse ) {
-        ClientResponse.Status status = clientResponse.getClientResponseStatus();
+        Response.StatusType statusType = clientResponse.getStatusInfo();
         MediaType type = clientResponse.getType();
         URI location = clientResponse.getLocation();
         response.setHttpStatus( clientResponse.getStatus() );
-        response.setHttpMessage( status == null ? null : status.getReasonPhrase() );
+        response.setHttpMessage( statusType == null ? null : statusType.getReasonPhrase() );
         response.setHeaders( clientResponse.getHeaders() );
         response.setContentType( type == null ? null : type.toString() );
         response.setContentLength( clientResponse.getLength() );
